@@ -71,13 +71,17 @@
                         @else
                             <div class="flex gap-2 mt-3">
                                 <button
-                                    class="btn-approve flex-1 text-xs font-medium py-1.5 px-3 rounded-lg bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition"
-                                    data-url="{{ route('approvals.approve', $referral) }}">
+                                    class="btn-confirm-action flex-1 text-xs font-medium py-1.5 px-3 rounded-lg bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition"
+                                    data-action="approve"
+                                    data-url="{{ route('approvals.approve', $referral) }}"
+                                    data-name="{{ $referral->name }}">
                                     Approve
                                 </button>
                                 <button
-                                    class="btn-reject flex-1 text-xs font-medium py-1.5 px-3 rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition"
-                                    data-url="{{ route('approvals.reject', $referral) }}">
+                                    class="btn-confirm-action flex-1 text-xs font-medium py-1.5 px-3 rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition"
+                                    data-action="decline"
+                                    data-url="{{ route('approvals.reject', $referral) }}"
+                                    data-name="{{ $referral->name }}">
                                     Decline
                                 </button>
                             </div>
@@ -92,46 +96,188 @@
             </div>
         </div>
     </div>
+
+    {{-- Confirmation Modal --}}
+    <div id="confirmation-modal" class="fixed inset-0 z-50 hidden">
+        {{-- Backdrop --}}
+        <div id="modal-backdrop" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm"></div>
+
+        {{-- Modal Panel --}}
+        <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+            <div id="modal-panel" class="relative bg-white rounded-2xl shadow-xl border border-gray-200 p-6" style="width: 100%; max-width: 380px;">
+                {{-- Icon --}}
+                <div id="modal-icon-wrapper" class="mx-auto flex h-12 w-12 items-center justify-center rounded-full mb-4 bg-green-100">
+                    <svg id="modal-icon-approve" class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <svg id="modal-icon-decline" class="h-6 w-6 text-red-600" style="display:none;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                </div>
+
+                {{-- Content --}}
+                <h3 id="modal-title" class="text-lg font-semibold text-gray-900 text-center">Confirm Action</h3>
+                <p id="modal-description" class="mt-2 text-sm text-gray-500 text-center leading-relaxed">Are you sure?</p>
+
+                {{-- Actions --}}
+                <div class="flex gap-3 mt-6">
+                    <button id="modal-cancel" type="button"
+                        class="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition cursor-pointer">
+                        Cancel
+                    </button>
+                    {{-- Approve confirm button --}}
+                    <button id="modal-confirm-approve" type="button" style="display:none; background-color:#16a34a;"
+                        class="flex-1 px-4 py-2.5 text-sm font-medium text-white rounded-lg transition cursor-pointer"
+                        onmouseover="this.style.backgroundColor='#15803d'" onmouseout="this.style.backgroundColor='#16a34a'">
+                        Yes, Approve
+                    </button>
+                    {{-- Decline confirm button --}}
+                    <button id="modal-confirm-decline" type="button" style="display:none; background-color:#dc2626;"
+                        class="flex-1 px-4 py-2.5 text-sm font-medium text-white rounded-lg transition cursor-pointer"
+                        onmouseover="this.style.backgroundColor='#b91c1c'" onmouseout="this.style.backgroundColor='#dc2626'">
+                        Yes, Decline
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
 <script>
-$(function () {
-    const csrfToken = $('meta[name="csrf-token"]').attr('content');
+document.addEventListener('DOMContentLoaded', function () {
+    var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    var modal = document.getElementById('confirmation-modal');
+    var backdrop = document.getElementById('modal-backdrop');
+    var iconWrapper = document.getElementById('modal-icon-wrapper');
+    var iconApprove = document.getElementById('modal-icon-approve');
+    var iconDecline = document.getElementById('modal-icon-decline');
+    var modalTitle = document.getElementById('modal-title');
+    var modalDescription = document.getElementById('modal-description');
+    var btnConfirmApprove = document.getElementById('modal-confirm-approve');
+    var btnConfirmDecline = document.getElementById('modal-confirm-decline');
+    var modalCancel = document.getElementById('modal-cancel');
 
-    $('#pending-approvals').on('click', '.btn-approve, .btn-reject', function () {
-        const $btn = $(this);
-        const $card = $btn.closest('[data-user-id]');
-        const url = $btn.data('url');
+    var pendingUrl = null;
+    var pendingCard = null;
 
-        $card.find('.btn-approve, .btn-reject').prop('disabled', true).addClass('opacity-50 cursor-not-allowed');
+    function openModal(action, name, url, card) {
+        pendingUrl = url;
+        pendingCard = card;
 
-        $.ajax({
-            url: url,
-            method: 'POST',
-            headers: { 'X-CSRF-TOKEN': csrfToken },
-            dataType: 'json',
-            success: function (data) {
-                $card.find('.approval-message')
-                    .removeClass('hidden text-red-600')
-                    .addClass('text-green-600')
-                    .text(data.message);
+        var isApprove = action === 'approve';
 
-                setTimeout(function () {
-                    $card.slideUp(300, function () { $(this).remove(); });
-                }, 1500);
-            },
-            error: function (xhr) {
-                const message = xhr.responseJSON?.message || 'Something went wrong.';
-                $card.find('.approval-message')
-                    .removeClass('hidden text-green-600')
-                    .addClass('text-red-600')
-                    .text(message);
+        // Icon
+        iconApprove.style.display = isApprove ? 'block' : 'none';
+        iconDecline.style.display = isApprove ? 'none' : 'block';
+        iconWrapper.style.backgroundColor = isApprove ? '#dcfce7' : '#fee2e2';
 
-                $card.find('.btn-approve, .btn-reject').prop('disabled', false).removeClass('opacity-50 cursor-not-allowed');
-            }
+        // Text
+        modalTitle.textContent = isApprove ? 'Approve Registration' : 'Decline Registration';
+        modalDescription.textContent = isApprove
+            ? 'Are you sure you want to approve ' + name + '\'s registration? This will count as your reference approval.'
+            : 'Are you sure you want to decline ' + name + '\'s registration? This will permanently delete their account.';
+
+        // Show the correct confirm button
+        btnConfirmApprove.style.display = isApprove ? 'block' : 'none';
+        btnConfirmDecline.style.display = isApprove ? 'none' : 'block';
+
+        // Show modal
+        modal.style.display = 'block';
+    }
+
+    function closeModal() {
+        modal.style.display = 'none';
+        pendingUrl = null;
+        pendingCard = null;
+    }
+
+    function executeAction() {
+        if (!pendingUrl || !pendingCard) return;
+
+        var card = pendingCard;
+        var url = pendingUrl;
+        closeModal();
+
+        // Disable buttons
+        card.querySelectorAll('.btn-confirm-action').forEach(function (btn) {
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+            btn.style.cursor = 'not-allowed';
         });
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(function (response) {
+            return response.json().then(function (data) {
+                return { ok: response.ok, data: data };
+            });
+        })
+        .then(function (result) {
+            var msgEl = card.querySelector('.approval-message');
+            if (result.ok) {
+                msgEl.style.display = 'block';
+                msgEl.style.color = '#16a34a';
+                msgEl.textContent = result.data.message;
+                setTimeout(function () {
+                    card.style.transition = 'opacity 0.3s';
+                    card.style.opacity = '0';
+                    setTimeout(function () { card.remove(); }, 300);
+                }, 1500);
+            } else {
+                msgEl.style.display = 'block';
+                msgEl.style.color = '#dc2626';
+                msgEl.textContent = result.data.message || 'Something went wrong.';
+                card.querySelectorAll('.btn-confirm-action').forEach(function (btn) {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    btn.style.cursor = 'pointer';
+                });
+            }
+        })
+        .catch(function () {
+            var msgEl = card.querySelector('.approval-message');
+            msgEl.style.display = 'block';
+            msgEl.style.color = '#dc2626';
+            msgEl.textContent = 'Network error. Please try again.';
+            card.querySelectorAll('.btn-confirm-action').forEach(function (btn) {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+            });
+        });
+    }
+
+    // Open modal on button click
+    document.getElementById('pending-approvals').addEventListener('click', function (e) {
+        var btn = e.target.closest('.btn-confirm-action');
+        if (!btn) return;
+        var card = btn.closest('[data-user-id]');
+        openModal(btn.dataset.action, btn.dataset.name, btn.dataset.url, card);
     });
+
+    // Confirm buttons
+    btnConfirmApprove.addEventListener('click', executeAction);
+    btnConfirmDecline.addEventListener('click', executeAction);
+
+    // Cancel / close
+    modalCancel.addEventListener('click', closeModal);
+    backdrop.addEventListener('click', closeModal);
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display !== 'none') {
+            closeModal();
+        }
+    });
+
+    // Initialize: ensure modal is hidden
+    modal.style.display = 'none';
 });
 </script>
 @endpush
