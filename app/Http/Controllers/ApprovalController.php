@@ -13,11 +13,19 @@ class ApprovalController extends Controller
      */
     public function approve(Request $request, User $user): JsonResponse
     {
-        $this->ensureIsReferrer($request, $user);
+        $position = $this->authorizedReferencePosition($request, $user);
 
-        $user->update(['status' => 'verified']);
+        $user->update([
+            "reference_{$position}_approved_at" => now(),
+        ]);
 
-        return response()->json(['message' => "{$user->name} has been verified."]);
+        if ($user->fresh()->isBothReferencesApproved()) {
+            $user->update(['status' => 'verified']);
+
+            return response()->json(['message' => "{$user->name} has been fully verified!"]);
+        }
+
+        return response()->json(['message' => "You approved {$user->name}. Waiting for the other reference."]);
     }
 
     /**
@@ -25,7 +33,7 @@ class ApprovalController extends Controller
      */
     public function reject(Request $request, User $user): JsonResponse
     {
-        $this->ensureIsReferrer($request, $user);
+        $this->authorizedReferencePosition($request, $user);
 
         $user->delete();
 
@@ -33,14 +41,16 @@ class ApprovalController extends Controller
     }
 
     /**
-     * Ensure the authenticated user is the referrer of the given pending user.
+     * Ensure the authenticated user is a referrer and return their position (1 or 2).
      */
-    private function ensureIsReferrer(Request $request, User $user): void
+    private function authorizedReferencePosition(Request $request, User $user): int
     {
-        abort_unless(
-            $user->status === 'pending' && $user->reference_email === $request->user()->email,
-            403,
-            'You are not authorized to perform this action.'
-        );
+        abort_unless($user->status === 'pending', 403, 'This user is not pending approval.');
+
+        $position = $user->referencePosition($request->user()->email);
+
+        abort_unless($position !== null, 403, 'You are not authorized to perform this action.');
+
+        return $position;
     }
 }

@@ -30,7 +30,8 @@ class UserFactory extends Factory
             'mobile' => fake()->numerify('01#########'),
             'intake' => fake()->numberBetween(1, 60),
             'shift' => fake()->randomElement(['day', 'evening']),
-            'reference_email' => null,
+            'reference_email_1' => null,
+            'reference_email_2' => null,
             'status' => 'verified',
             'bio' => fake()->optional()->sentence(),
             'whatsapp_number' => fake()->optional()->numerify('01#########'),
@@ -73,12 +74,13 @@ class UserFactory extends Factory
     }
 
     /**
-     * Set a specific reference email.
+     * Set specific reference emails.
      */
-    public function withReference(string $email): static
+    public function withReference(string $email, ?string $email2 = null): static
     {
         return $this->state(fn (array $attributes) => [
-            'reference_email' => $email,
+            'reference_email_1' => $email,
+            'reference_email_2' => $email2 ?? $email,
             'status' => 'pending',
         ]);
     }

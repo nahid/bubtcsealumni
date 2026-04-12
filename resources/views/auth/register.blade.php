@@ -62,15 +62,27 @@
             </div>
         </div>
 
-        {{-- Reference Email --}}
-        <div>
-            <label for="reference_email" class="block text-sm font-medium text-gray-700 mb-1">Reference Email</label>
-            <input id="reference_email" type="email" name="reference_email" value="{{ old('reference_email') }}" required
-                class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
-                placeholder="Email of an existing verified alumni">
-            @error('reference_email')
-                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-            @enderror
+        {{-- Reference Emails --}}
+        <div class="space-y-4">
+            <p class="text-xs text-gray-500">Provide emails of two verified alumni who can vouch for you. Both must approve your registration.</p>
+            <div>
+                <label for="reference_email_1" class="block text-sm font-medium text-gray-700 mb-1">Reference 1 Email</label>
+                <input id="reference_email_1" type="email" name="reference_email_1" value="{{ old('reference_email_1') }}" required
+                    class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
+                    placeholder="Email of a verified alumni">
+                @error('reference_email_1')
+                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+            <div>
+                <label for="reference_email_2" class="block text-sm font-medium text-gray-700 mb-1">Reference 2 Email</label>
+                <input id="reference_email_2" type="email" name="reference_email_2" value="{{ old('reference_email_2') }}" required
+                    class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
+                    placeholder="Email of another verified alumni">
+                @error('reference_email_2')
+                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
         </div>
 
         {{-- Password --}}

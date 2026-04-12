@@ -28,8 +28,11 @@ class DatabaseSeeder extends Seeder
         // Verified alumni
         $verifiedUsers = User::factory(20)->create();
 
-        // A few pending users referencing verified alumni
-        User::factory(5)->withReference($verifiedUsers->random()->email)->create();
+        // A few pending users referencing two verified alumni each
+        User::factory(5)->withReference(
+            $verifiedUsers->random()->email,
+            $verifiedUsers->random()->email,
+        )->create();
 
         // Seed well-known tags
         $tagNames = ['Laravel', 'PHP', 'JavaScript', 'DataScience', 'MachineLearning', 'DevOps', 'Android', 'iOS', 'React', 'Python'];

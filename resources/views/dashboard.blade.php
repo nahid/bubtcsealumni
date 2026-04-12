@@ -47,22 +47,41 @@
 
             <div id="pending-approvals" class="space-y-3">
                 @forelse ($pendingReferrals as $referral)
+                    @php
+                        $position = $referral->referencePosition(auth()->user()->email);
+                        $alreadyApproved = $position === 1 ? $referral->reference_1_approved_at : $referral->reference_2_approved_at;
+                        $otherApproved = $position === 1 ? $referral->reference_2_approved_at : $referral->reference_1_approved_at;
+                    @endphp
                     <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4" data-user-id="{{ $referral->id }}">
                         <p class="font-medium text-gray-900 text-sm">{{ $referral->name }}</p>
                         <p class="text-xs text-gray-500">{{ $referral->email }}</p>
                         <p class="text-xs text-gray-400 mt-1">Intake {{ $referral->intake }} · {{ ucfirst($referral->shift) }}</p>
-                        <div class="flex gap-2 mt-3">
-                            <button
-                                class="btn-approve flex-1 text-xs font-medium py-1.5 px-3 rounded-lg bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition"
-                                data-url="{{ route('approvals.approve', $referral) }}">
-                                Approve
-                            </button>
-                            <button
-                                class="btn-reject flex-1 text-xs font-medium py-1.5 px-3 rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition"
-                                data-url="{{ route('approvals.reject', $referral) }}">
-                                Decline
-                            </button>
+                        <div class="flex items-center gap-2 mt-2">
+                            <span class="inline-flex items-center gap-1 text-xs {{ $alreadyApproved ? 'text-green-600' : 'text-gray-400' }}">
+                                <span class="h-1.5 w-1.5 rounded-full {{ $alreadyApproved ? 'bg-green-500' : 'bg-gray-300' }}"></span>
+                                Your approval
+                            </span>
+                            <span class="inline-flex items-center gap-1 text-xs {{ $otherApproved ? 'text-green-600' : 'text-gray-400' }}">
+                                <span class="h-1.5 w-1.5 rounded-full {{ $otherApproved ? 'bg-green-500' : 'bg-gray-300' }}"></span>
+                                Other reference
+                            </span>
                         </div>
+                        @if ($alreadyApproved)
+                            <p class="text-xs text-green-600 mt-3 font-medium">✓ You already approved this request.</p>
+                        @else
+                            <div class="flex gap-2 mt-3">
+                                <button
+                                    class="btn-approve flex-1 text-xs font-medium py-1.5 px-3 rounded-lg bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition"
+                                    data-url="{{ route('approvals.approve', $referral) }}">
+                                    Approve
+                                </button>
+                                <button
+                                    class="btn-reject flex-1 text-xs font-medium py-1.5 px-3 rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition"
+                                    data-url="{{ route('approvals.reject', $referral) }}">
+                                    Decline
+                                </button>
+                            </div>
+                        @endif
                         <p class="approval-message text-xs mt-2 hidden"></p>
                     </div>
                 @empty

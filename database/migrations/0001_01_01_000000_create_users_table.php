@@ -18,7 +18,10 @@ return new class extends Migration
             $table->string('mobile', 20);
             $table->unsignedSmallInteger('intake')->comment('Batch number');
             $table->string('shift', 10)->default('day')->comment('day or evening');
-            $table->string('reference_email')->nullable()->comment('Email of the referring alumni');
+            $table->string('reference_email_1')->nullable()->comment('First reference alumni email');
+            $table->string('reference_email_2')->nullable()->comment('Second reference alumni email');
+            $table->timestamp('reference_1_approved_at')->nullable();
+            $table->timestamp('reference_2_approved_at')->nullable();
             $table->string('status', 20)->default('pending')->comment('pending, verified, rejected');
             $table->text('bio')->nullable();
             $table->string('profile_photo')->nullable();
@@ -29,7 +32,8 @@ return new class extends Migration
             $table->rememberToken();
             $table->timestamps();
 
-            $table->index('reference_email');
+            $table->index('reference_email_1');
+            $table->index('reference_email_2');
             $table->index('status');
             $table->index('intake');
         });
