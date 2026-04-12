@@ -4,7 +4,10 @@ use App\Http\Controllers\ApprovalController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DirectoryController;
 use App\Http\Controllers\JobPostController;
+use App\Http\Controllers\NoticeController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TagSubscriptionController;
 use Illuminate\Support\Facades\Route;
 
@@ -36,6 +39,24 @@ Route::middleware(['auth', 'verified.alumni'])->group(function () {
 
     // Tag Subscriptions
     Route::post('/tags/{tag}/toggle', [TagSubscriptionController::class, 'toggle'])->name('tags.toggle');
+
+    // Community Directory
+    Route::get('/directory', [DirectoryController::class, 'index'])->name('directory.index');
+
+    // Profiles
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::get('/profile/{user}', [ProfileController::class, 'show'])->name('profile.show');
+
+    // Admin Notices
+    Route::middleware('admin')->group(function () {
+        Route::get('/notices', [NoticeController::class, 'index'])->name('notices.index');
+        Route::get('/notices/create', [NoticeController::class, 'create'])->name('notices.create');
+        Route::post('/notices', [NoticeController::class, 'store'])->name('notices.store');
+        Route::get('/notices/{notice}/edit', [NoticeController::class, 'edit'])->name('notices.edit');
+        Route::put('/notices/{notice}', [NoticeController::class, 'update'])->name('notices.update');
+        Route::delete('/notices/{notice}', [NoticeController::class, 'destroy'])->name('notices.destroy');
+    });
 
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 });

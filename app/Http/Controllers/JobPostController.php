@@ -25,7 +25,7 @@ class JobPostController extends Controller
             ->latest();
 
         if ($search = $request->input('search')) {
-            $query->where('title', 'ilike', "%{$search}%");
+            $query->where('title', 'like', "%{$search}%");
         }
 
         if ($tagSlug = $request->input('tag')) {

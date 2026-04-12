@@ -26,6 +26,11 @@
                     @auth
                         <a href="{{ route('dashboard') }}" class="text-sm font-medium text-gray-600 hover:text-gray-900">Dashboard</a>
                         <a href="{{ route('jobs.index') }}" class="text-sm font-medium text-gray-600 hover:text-gray-900">Jobs</a>
+                        <a href="{{ route('directory.index') }}" class="text-sm font-medium text-gray-600 hover:text-gray-900">Directory</a>
+                        <a href="{{ route('profile.edit') }}" class="text-sm font-medium text-gray-600 hover:text-gray-900">My Profile</a>
+                        @if (auth()->user()->isAdmin())
+                            <a href="{{ route('notices.index') }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-700">Notices</a>
+                        @endif
                         <form method="POST" action="{{ route('logout') }}" class="inline">
                             @csrf
                             <button type="submit" class="text-sm font-medium text-gray-500 hover:text-gray-700">
