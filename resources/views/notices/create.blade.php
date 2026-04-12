@@ -4,93 +4,111 @@
 
 @section('content')
     <div class="max-w-2xl mx-auto">
-        <a href="{{ route('notices.index') }}" class="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 mb-6">
-            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <a href="{{ route('notices.index') }}" class="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors mb-6 group">
+            <svg class="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
             </svg>
             Back to Notices
         </a>
 
-        <h1 class="text-2xl font-bold text-gray-900 mb-6">Create Notice</h1>
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-900">Create Notice</h1>
+            <p class="mt-1 text-sm text-gray-500">Publish a notice or event for all alumni to see.</p>
+        </div>
 
-        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-            <form method="POST" action="{{ route('notices.store') }}">
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm">
+            <form method="POST" action="{{ route('notices.store') }}" class="p-6 space-y-5">
                 @csrf
 
                 {{-- Title --}}
-                <div class="mb-5">
-                    <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                <div>
+                    <label for="title" class="block text-sm font-medium text-gray-700 mb-1.5">Title</label>
                     <input type="text"
                            name="title"
                            id="title"
                            value="{{ old('title') }}"
                            required
-                           class="w-full rounded-lg border-gray-300 shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                           placeholder="Enter a clear, descriptive title…"
+                           class="w-full rounded-lg border-gray-300 shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500 placeholder:text-gray-400">
                     @error('title')
-                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
 
-                {{-- Type --}}
-                <div class="mb-5">
-                    <label for="type" class="block text-sm font-medium text-gray-700 mb-1">Type</label>
-                    <select name="type"
-                            id="type"
-                            required
-                            class="w-full rounded-lg border-gray-300 shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        <option value="notice" @selected(old('type') === 'notice')>Notice</option>
-                        <option value="event" @selected(old('type') === 'event')>Event</option>
-                    </select>
-                    @error('type')
-                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
+                {{-- Type & Event Date Row --}}
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    {{-- Type --}}
+                    <div>
+                        <label for="type" class="block text-sm font-medium text-gray-700 mb-1.5">Type</label>
+                        <select name="type"
+                                id="type"
+                                required
+                                class="w-full rounded-lg border-gray-300 shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <option value="notice" @selected(old('type') === 'notice')>📢 Notice</option>
+                            <option value="event" @selected(old('type') === 'event')>📅 Event</option>
+                        </select>
+                        @error('type')
+                            <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
 
-                {{-- Event Date --}}
-                <div class="mb-5" id="event-date-group">
-                    <label for="event_date" class="block text-sm font-medium text-gray-700 mb-1">Event Date</label>
-                    <input type="date"
-                           name="event_date"
-                           id="event_date"
-                           value="{{ old('event_date') }}"
-                           min="{{ date('Y-m-d') }}"
-                           class="w-full rounded-lg border-gray-300 shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                    @error('event_date')
-                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                    @enderror
+                    {{-- Event Date --}}
+                    <div id="event-date-group">
+                        <label for="event_date" class="block text-sm font-medium text-gray-700 mb-1.5">Event Date</label>
+                        <input type="date"
+                               name="event_date"
+                               id="event_date"
+                               value="{{ old('event_date') }}"
+                               min="{{ date('Y-m-d') }}"
+                               class="w-full rounded-lg border-gray-300 shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        @error('event_date')
+                            <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
 
                 {{-- Body --}}
-                <div class="mb-5">
-                    <label for="body" class="block text-sm font-medium text-gray-700 mb-1">Content</label>
+                <div>
+                    <label for="body" class="block text-sm font-medium text-gray-700 mb-1.5">Content</label>
                     <textarea name="body"
                               id="body"
-                              rows="6"
+                              rows="8"
                               required
                               maxlength="5000"
                               placeholder="Write your notice content…"
-                              class="w-full rounded-lg border-gray-300 shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500">{{ old('body') }}</textarea>
+                              class="w-full rounded-lg border-gray-300 shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500 placeholder:text-gray-400">{{ old('body') }}</textarea>
+                    <p class="mt-1 text-xs text-gray-400">Maximum 5,000 characters</p>
                     @error('body')
-                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
 
-                {{-- Published --}}
-                <div class="mb-6">
-                    <label class="inline-flex items-center gap-2 cursor-pointer">
+                {{-- Published Toggle --}}
+                <div class="rounded-lg bg-gray-50 border border-gray-200 p-4">
+                    <label class="flex items-center gap-3 cursor-pointer">
                         <input type="hidden" name="is_published" value="0">
                         <input type="checkbox"
                                name="is_published"
                                value="1"
                                {{ old('is_published', true) ? 'checked' : '' }}
-                               class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
-                        <span class="text-sm text-gray-700">Publish immediately</span>
+                               class="h-4 w-4 rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                        <div>
+                            <span class="text-sm font-medium text-gray-700">Publish immediately</span>
+                            <p class="text-xs text-gray-500 mt-0.5">When unchecked, the notice will be saved as a draft.</p>
+                        </div>
                     </label>
                 </div>
 
-                <button type="submit" class="w-full px-4 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition">
-                    Create Notice
-                </button>
+                {{-- Submit --}}
+                <div class="flex items-center gap-3 pt-2">
+                    <button type="submit"
+                            class="flex-1 sm:flex-none px-6 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition shadow-sm">
+                        Create Notice
+                    </button>
+                    <a href="{{ route('notices.index') }}" class="text-sm text-gray-500 hover:text-gray-700 transition-colors">
+                        Cancel
+                    </a>
+                </div>
             </form>
         </div>
     </div>
