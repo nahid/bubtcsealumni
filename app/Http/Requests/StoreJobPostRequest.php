@@ -27,7 +27,8 @@ class StoreJobPostRequest extends FormRequest
             'external_link' => ['required', 'url', 'max:500'],
             'salary' => ['nullable', 'string', 'max:100'],
             'expiry_date' => ['required', 'date', 'after:today'],
-            'tags' => ['required', 'string', 'max:500'],
+            'tags' => ['required', 'array', 'min:1'],
+            'tags.*' => ['integer', 'exists:tags,id'],
         ];
     }
 }

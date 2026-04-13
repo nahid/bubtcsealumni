@@ -12,6 +12,10 @@
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700" rel="stylesheet" />
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    {{-- Select2 --}}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    @stack('styles')
 </head>
 <body class="bg-gray-50 text-gray-900 font-sans antialiased min-h-screen flex flex-col">
     {{-- Navigation --}}
@@ -28,6 +32,19 @@
                         <a href="{{ route('jobs.index') }}" class="text-sm font-medium text-gray-600 hover:text-gray-900">Jobs</a>
                         <a href="{{ route('directory.index') }}" class="text-sm font-medium text-gray-600 hover:text-gray-900">Directory</a>
                         <a href="{{ route('profile.edit') }}" class="text-sm font-medium text-gray-600 hover:text-gray-900">My Profile</a>
+
+                        {{-- Notifications Bell --}}
+                        @php $unreadCount = auth()->user()->unreadNotifications()->count(); @endphp
+                        <a href="{{ route('dashboard') }}" class="relative text-gray-600 hover:text-gray-900" title="Notifications">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                            </svg>
+                            @if ($unreadCount > 0)
+                                <span class="absolute -top-1.5 -right-1.5 inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-red-500 rounded-full">
+                                    {{ $unreadCount > 9 ? '9+' : $unreadCount }}
+                                </span>
+                            @endif
+                        </a>
                         @if (auth()->user()->isAdmin())
                             <a href="{{ route('notices.index') }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-700">Notices</a>
                         @endif
@@ -76,6 +93,7 @@
         </div>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     @stack('scripts')
 </body>
 </html>

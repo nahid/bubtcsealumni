@@ -34,8 +34,58 @@
             @endforelse
         </div>
 
-        {{-- Sidebar: Pending Approvals --}}
-        <div>
+        {{-- Sidebar: Notifications & Pending Approvals --}}
+        <div class="space-y-6">
+            {{-- Notifications --}}
+            <div>
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">
+                    Notifications
+                    @if ($notifications->count())
+                        <span class="ml-1 text-xs font-normal text-gray-400">({{ $notifications->count() }})</span>
+                    @endif
+                </h2>
+
+                <div class="space-y-3 max-h-80 overflow-y-auto">
+                    @forelse ($notifications as $notification)
+                        <div class="bg-white rounded-xl border {{ $notification->read_at ? 'border-gray-200' : 'border-indigo-200 bg-indigo-50/30' }} shadow-sm p-4">
+                            @if ($notification->type === 'App\\Notifications\\NewJobMatchesTagNotification')
+                                <div class="flex items-start gap-3">
+                                    <span class="mt-0.5 inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex-shrink-0">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                        </svg>
+                                    </span>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-gray-900 truncate">
+                                            {{ $notification->data['title'] ?? 'New Job' }}
+                                        </p>
+                                        <p class="text-xs text-gray-500 mt-0.5">
+                                            Matches tag <span class="font-medium text-indigo-600">#{{ $notification->data['matched_tag'] ?? '' }}</span>
+                                        </p>
+                                        <p class="text-xs text-gray-400 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
+                                        @if (isset($notification->data['job_post_id']))
+                                            <a href="{{ route('jobs.show', $notification->data['job_post_id']) }}"
+                                               class="inline-block mt-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-700">
+                                                View Job →
+                                            </a>
+                                        @endif
+                                    </div>
+                                </div>
+                            @else
+                                <p class="text-sm text-gray-600">{{ json_encode($notification->data) }}</p>
+                                <p class="text-xs text-gray-400 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
+                            @endif
+                        </div>
+                    @empty
+                        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 text-center text-sm text-gray-400">
+                            No notifications yet. Follow tags to get notified about matching jobs!
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+
+            {{-- Pending Approvals --}}
+            <div>
             <h2 class="text-lg font-semibold text-gray-800 mb-4">
                 Pending Approvals
                 @if ($pendingReferrals->count())
@@ -94,6 +144,7 @@
                     </div>
                 @endforelse
             </div>
+        </div>
         </div>
     </div>
 

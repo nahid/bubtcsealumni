@@ -10,7 +10,6 @@ use App\Notifications\NewJobMatchesTagNotification;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class JobPostController extends Controller
 {
@@ -43,7 +42,7 @@ class JobPostController extends Controller
      */
     public function create(): View
     {
-        $existingTags = Tag::orderBy('name')->pluck('name');
+        $existingTags = Tag::orderBy('name')->get();
 
         return view('jobs.create', compact('existingTags'));
     }
@@ -64,18 +63,8 @@ class JobPostController extends Controller
             'status' => 'open',
         ]);
 
-        // Parse comma-separated tags, create if needed, and attach
-        $tagNames = array_filter(array_map('trim', explode(',', $validated['tags'])));
-        $tagIds = [];
-
-        foreach ($tagNames as $tagName) {
-            $tag = Tag::firstOrCreate(
-                ['slug' => Str::slug($tagName)],
-                ['name' => $tagName]
-            );
-            $tagIds[] = $tag->id;
-        }
-
+        // Attach selected tags
+        $tagIds = $validated['tags'];
         $jobPost->tags()->sync($tagIds);
 
         // Notify subscribers of matching tags

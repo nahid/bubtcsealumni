@@ -57,7 +57,7 @@ test('subscriber receives notification for each matching tag only once', functio
             'external_link' => 'https://example.com/jobs/5',
             'salary' => '100k BDT',
             'expiry_date' => now()->addMonth()->format('Y-m-d'),
-            'tags' => 'PHP, Laravel',
+            'tags' => [$tag1->id, $tag2->id],
         ]);
 
     // Subscriber should be notified only once (for the first matching tag)

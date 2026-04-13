@@ -21,6 +21,11 @@ class DashboardController extends Controller
             ->take(10)
             ->get();
 
-        return view('dashboard', compact('pendingReferrals', 'notices'));
+        $notifications = $user->notifications()->latest()->take(20)->get();
+
+        // Mark unread notifications as read
+        $user->unreadNotifications->markAsRead();
+
+        return view('dashboard', compact('pendingReferrals', 'notices', 'notifications'));
     }
 }

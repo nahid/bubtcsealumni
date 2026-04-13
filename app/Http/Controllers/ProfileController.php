@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateProfileRequest;
+use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
@@ -26,8 +27,10 @@ class ProfileController extends Controller
     public function edit(): View
     {
         $user = auth()->user();
+        $allTags = Tag::orderBy('name')->get();
+        $subscribedTagIds = $user->subscribedTags()->pluck('tags.id')->toArray();
 
-        return view('profile.edit', compact('user'));
+        return view('profile.edit', compact('user', 'allTags', 'subscribedTagIds'));
     }
 
     /**
@@ -50,6 +53,11 @@ class ProfileController extends Controller
         }
 
         $user->update($validated);
+
+        // Sync subscribed tags
+        $tagIds = $request->input('subscribed_tags', []);
+        $syncData = collect($tagIds)->mapWithKeys(fn ($id) => [(int) $id => ['subscribed_at' => now()]])->toArray();
+        $user->subscribedTags()->sync($syncData);
 
         return response()->json([
             'message' => 'Profile updated successfully!',

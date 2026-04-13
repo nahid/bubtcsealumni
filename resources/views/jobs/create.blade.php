@@ -59,18 +59,22 @@
 
                 {{-- Tags --}}
                 <div>
-                    <label for="tags" class="block text-sm font-medium text-gray-700 mb-1">Tags <span class="text-gray-400">(comma-separated)</span></label>
-                    <input id="tags" type="text" name="tags" value="{{ old('tags') }}" required
-                           class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
-                           placeholder="e.g. Laravel, PHP, Remote">
+                    <label for="tags" class="block text-sm font-medium text-gray-700 mb-1">Tags</label>
+                    <select id="tags" name="tags[]" multiple="multiple" required
+                            class="w-full rounded-lg border border-gray-300 text-sm">
+                        @foreach ($existingTags as $tag)
+                            <option value="{{ $tag->id }}"
+                                {{ is_array(old('tags')) && in_array($tag->id, old('tags')) ? 'selected' : '' }}>
+                                {{ $tag->name }}
+                            </option>
+                        @endforeach
+                    </select>
                     @error('tags')
                         <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                     @enderror
-                    @if($existingTags->isNotEmpty())
-                        <p class="mt-1.5 text-xs text-gray-400">
-                            Existing: {{ $existingTags->map(fn($t) => "#{$t}")->implode(', ') }}
-                        </p>
-                    @endif
+                    @error('tags.*')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 {{-- Submit --}}
@@ -85,4 +89,48 @@
         </div>
     </div>
 @endsection
+
+@push('styles')
+<style>
+    .select2-container--default .select2-selection--multiple {
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        padding: 0.25rem 0.25rem;
+        min-height: 42px;
+        font-size: 0.875rem;
+    }
+    .select2-container--default .select2-selection--multiple .select2-selection__choice {
+        background-color: #eef2ff;
+        border: 1px solid #c7d2fe;
+        color: #4338ca;
+        border-radius: 0.375rem;
+        padding: 2px 8px;
+        font-size: 0.75rem;
+    }
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+        color: #6366f1;
+        margin-right: 4px;
+    }
+    .select2-dropdown {
+        border-radius: 0.5rem;
+        border-color: #d1d5db;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+    .select2-results__option--highlighted[aria-selected] {
+        background-color: #4f46e5 !important;
+    }
+</style>
+@endpush
+
+@push('scripts')
+<script>
+$(function () {
+    $('#tags').select2({
+        placeholder: 'Select tags for this job…',
+        allowClear: true,
+        width: '100%'
+    });
+});
+</script>
+@endpush
 

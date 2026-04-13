@@ -79,6 +79,7 @@ test('authenticated user can create a job post', function () {
     Notification::fake();
 
     $user = User::factory()->create();
+    $tags = Tag::factory()->count(3)->create();
 
     $this->actingAs($user)
         ->post(route('jobs.store'), [
@@ -86,7 +87,7 @@ test('authenticated user can create a job post', function () {
             'external_link' => 'https://example.com/jobs/1',
             'salary' => '100k-150k BDT',
             'expiry_date' => now()->addMonth()->format('Y-m-d'),
-            'tags' => 'PHP, Laravel, Backend',
+            'tags' => $tags->pluck('id')->toArray(),
         ])->assertRedirect();
 
     $this->assertDatabaseHas('job_posts', [
@@ -95,9 +96,8 @@ test('authenticated user can create a job post', function () {
         'status' => 'open',
     ]);
 
-    expect(Tag::where('slug', 'php')->exists())->toBeTrue()
-        ->and(Tag::where('slug', 'laravel')->exists())->toBeTrue()
-        ->and(Tag::where('slug', 'backend')->exists())->toBeTrue();
+    $jobPost = JobPost::where('title', 'Senior Laravel Developer')->first();
+    expect($jobPost->tags()->count())->toBe(3);
 });
 
 test('creating a job post notifies tag subscribers', function () {
@@ -115,7 +115,7 @@ test('creating a job post notifies tag subscribers', function () {
             'external_link' => 'https://example.com/jobs/2',
             'salary' => '80k BDT',
             'expiry_date' => now()->addMonth()->format('Y-m-d'),
-            'tags' => 'PHP',
+            'tags' => [$tag->id],
         ]);
 
     Notification::assertSentTo($subscriber, NewJobMatchesTagNotification::class);
@@ -134,7 +134,7 @@ test('job poster is not notified about their own job', function () {
             'external_link' => 'https://example.com/jobs/3',
             'salary' => '80k BDT',
             'expiry_date' => now()->addMonth()->format('Y-m-d'),
-            'tags' => 'PHP',
+            'tags' => [$tag->id],
         ]);
 
     Notification::assertNotSentTo($poster, NewJobMatchesTagNotification::class);
@@ -142,13 +142,14 @@ test('job poster is not notified about their own job', function () {
 
 test('job post creation requires valid data', function (string $field, mixed $value) {
     $user = User::factory()->create();
+    $tags = Tag::factory()->count(2)->create();
 
     $data = [
         'title' => 'Valid Title',
         'external_link' => 'https://example.com',
         'salary' => '80k BDT',
         'expiry_date' => now()->addMonth()->format('Y-m-d'),
-        'tags' => 'PHP, Laravel',
+        'tags' => $tags->pluck('id')->toArray(),
     ];
 
     $data[$field] = $value;
@@ -162,7 +163,7 @@ test('job post creation requires valid data', function (string $field, mixed $va
     'external_link must be a url' => ['external_link', 'not-a-url'],
     'expiry_date is required' => ['expiry_date', ''],
     'expiry_date must be after today' => ['expiry_date', now()->subDay()->format('Y-m-d')],
-    'tags are required' => ['tags', ''],
+    'tags are required' => ['tags', []],
 ]);
 
 test('authenticated user can view a single job post', function () {
