@@ -15,6 +15,49 @@
 
     {{-- Select2 --}}
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        .select2-container--default .select2-selection--multiple {
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            padding: 0.25rem 0.25rem;
+            min-height: 42px;
+            font-size: 0.875rem;
+        }
+        .select2-container--default .select2-selection--multiple .select2-selection__choice {
+            background-color: #eef2ff;
+            border: 1px solid #c7d2fe;
+            color: #4338ca;
+            border-radius: 0.375rem;
+            padding: 1px 12px;
+            font-size: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+            color: #6366f1;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            border: none !important;
+            border-right: none !important;
+            padding: 0 2px;
+            line-height: 1;
+            float: none;
+        }
+        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+            color: #4338ca;
+            background-color: transparent !important;
+        }
+        .select2-dropdown {
+            border-radius: 0.5rem;
+            border-color: #d1d5db;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+        .select2-results__option--highlighted[aria-selected] {
+            background-color: #4f46e5 !important;
+        }
+    </style>
     @stack('styles')
 </head>
 <body class="bg-gray-50 text-gray-900 font-sans antialiased min-h-screen flex flex-col">
@@ -93,6 +136,8 @@
         </div>
     </footer>
 
+    {{-- jQuery must load before Select2 (Vite modules are deferred, so CDN jQuery is needed here) --}}
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     @stack('scripts')
 </body>

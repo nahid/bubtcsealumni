@@ -90,38 +90,6 @@
     </div>
 @endsection
 
-@push('styles')
-<style>
-    .select2-container--default .select2-selection--multiple {
-        border: 1px solid #d1d5db;
-        border-radius: 0.5rem;
-        padding: 0.25rem 0.25rem;
-        min-height: 42px;
-        font-size: 0.875rem;
-    }
-    .select2-container--default .select2-selection--multiple .select2-selection__choice {
-        background-color: #eef2ff;
-        border: 1px solid #c7d2fe;
-        color: #4338ca;
-        border-radius: 0.375rem;
-        padding: 2px 8px;
-        font-size: 0.75rem;
-    }
-    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
-        color: #6366f1;
-        margin-right: 4px;
-    }
-    .select2-dropdown {
-        border-radius: 0.5rem;
-        border-color: #d1d5db;
-        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-    }
-    .select2-results__option--highlighted[aria-selected] {
-        background-color: #4f46e5 !important;
-    }
-</style>
-@endpush
-
 @push('scripts')
 <script>
 $(function () {
