@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DirectoryController;
+use App\Http\Controllers\EventController;
 use App\Http\Controllers\JobPostController;
 use App\Http\Controllers\NoticeController;
 use App\Http\Controllers\ProfileController;
@@ -56,7 +57,13 @@ Route::middleware(['auth', 'verified.alumni'])->group(function () {
         Route::get('/notices/{notice}/edit', [NoticeController::class, 'edit'])->name('notices.edit');
         Route::put('/notices/{notice}', [NoticeController::class, 'update'])->name('notices.update');
         Route::delete('/notices/{notice}', [NoticeController::class, 'destroy'])->name('notices.destroy');
+        Route::get('/notices/{notice}/participants', [NoticeController::class, 'participants'])->name('notices.participants');
+        Route::get('/notices/{notice}/participants/export', [NoticeController::class, 'exportParticipants'])->name('notices.participants.export');
     });
+
+    // Public Events
+    Route::get('/events/{notice}', [EventController::class, 'show'])->name('events.show');
+    Route::post('/events/{notice}/register', [EventController::class, 'register'])->name('events.register');
 
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 });

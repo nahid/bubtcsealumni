@@ -21,11 +21,13 @@ class DashboardController extends Controller
             ->take(10)
             ->get();
 
+        $registeredEventIds = $user->eventRegistrations()->pluck('notice_id')->toArray();
+
         $notifications = $user->notifications()->latest()->take(20)->get();
 
         // Mark unread notifications as read
         $user->unreadNotifications->markAsRead();
 
-        return view('dashboard', compact('pendingReferrals', 'notices', 'notifications'));
+        return view('dashboard', compact('pendingReferrals', 'notices', 'notifications', 'registeredEventIds'));
     }
 }

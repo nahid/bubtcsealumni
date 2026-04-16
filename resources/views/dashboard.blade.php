@@ -26,6 +26,25 @@
                         <p class="text-xs text-indigo-600 mt-1">📅 {{ $notice->event_date->format('M d, Y') }}</p>
                     @endif
                     <p class="text-sm text-gray-600 mt-2 leading-relaxed">{{ Str::limit($notice->body, 200) }}</p>
+                    @if ($notice->isEvent() && $notice->hasRegistrationForm())
+                        <div class="mt-3">
+                            @if (in_array($notice->id, $registeredEventIds))
+                                <span class="inline-flex items-center gap-1 text-xs font-medium text-green-700 bg-green-50 px-2.5 py-1 rounded-full ring-1 ring-inset ring-green-600/10">
+                                    ✓ Registered
+                                </span>
+                            @else
+                                <a href="{{ route('events.show', $notice) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white text-xs font-medium rounded-lg hover:bg-indigo-700 transition shadow-sm">
+                                    Register Now →
+                                </a>
+                            @endif
+                        </div>
+                    @elseif ($notice->isEvent())
+                        <div class="mt-3">
+                            <a href="{{ route('events.show', $notice) }}" class="inline-flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-800 transition-colors">
+                                View Event Details →
+                            </a>
+                        </div>
+                    @endif
                 </div>
             @empty
                 <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 text-center text-sm text-gray-400">

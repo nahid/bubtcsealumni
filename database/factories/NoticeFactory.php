@@ -48,4 +48,20 @@ class NoticeFactory extends Factory
             'is_published' => false,
         ]);
     }
+
+    /**
+     * Attach a sample registration form schema to an event.
+     */
+    public function withForm(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'type' => 'event',
+            'event_date' => $attributes['event_date'] ?? fake()->dateTimeBetween('+1 week', '+3 months'),
+            'form_schema' => [
+                ['key' => 'field_1', 'type' => 'text', 'label' => 'Full Name', 'required' => true, 'placeholder' => 'Your name'],
+                ['key' => 'field_2', 'type' => 'select', 'label' => 'T-Shirt Size', 'required' => true, 'options' => ['S', 'M', 'L', 'XL']],
+                ['key' => 'field_3', 'type' => 'textarea', 'label' => 'Comments', 'required' => false],
+            ],
+        ]);
+    }
 }

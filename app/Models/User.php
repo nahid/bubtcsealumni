@@ -106,6 +106,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Event registrations submitted by this user.
+     */
+    public function eventRegistrations(): HasMany
+    {
+        return $this->hasMany(EventRegistration::class);
+    }
+
+    /**
      * Check if the user account is verified.
      */
     public function isVerified(): bool

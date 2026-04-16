@@ -7,16 +7,15 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['title', 'body', 'type', 'event_date', 'is_published'])]
+#[Fillable(['title', 'body', 'type', 'event_date', 'form_schema', 'is_published'])]
 class Notice extends Model
 {
     /** @use HasFactory<NoticeFactory> */
     use HasFactory;
 
     /**
-     * Get the attributes that should be cast.
-     *
      * @return array<string, string>
      */
     protected function casts(): array
@@ -24,6 +23,7 @@ class Notice extends Model
         return [
             'event_date' => 'date',
             'is_published' => 'boolean',
+            'form_schema' => 'array',
         ];
     }
 
@@ -33,5 +33,29 @@ class Notice extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Event registrations for this notice.
+     */
+    public function registrations(): HasMany
+    {
+        return $this->hasMany(EventRegistration::class);
+    }
+
+    /**
+     * Check if this notice is an event.
+     */
+    public function isEvent(): bool
+    {
+        return $this->type === 'event';
+    }
+
+    /**
+     * Check if this event has a registration form.
+     */
+    public function hasRegistrationForm(): bool
+    {
+        return $this->isEvent() && ! empty($this->form_schema);
     }
 }
