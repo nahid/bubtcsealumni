@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\BoardPosition;
+use App\Enums\UserRole;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -15,7 +17,8 @@ use Illuminate\Notifications\Notifiable;
 #[Fillable([
     'name', 'email', 'mobile', 'password',
     'intake', 'shift', 'reference_email_1', 'reference_email_2',
-    'status', 'bio', 'profile_photo', 'whatsapp_number',
+    'status', 'role', 'board_position', 'blocked_at',
+    'bio', 'profile_photo', 'whatsapp_number',
     'alumni_id', 'facebook_url', 'linkedin_url', 'website_url',
     'reference_1_approved_at', 'reference_2_approved_at',
 ])]
@@ -36,7 +39,9 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'intake' => 'integer',
-            'is_admin' => 'boolean',
+            'role' => UserRole::class,
+            'board_position' => BoardPosition::class,
+            'blocked_at' => 'datetime',
             'reference_1_approved_at' => 'datetime',
             'reference_2_approved_at' => 'datetime',
         ];
@@ -126,7 +131,31 @@ class User extends Authenticatable
      */
     public function isAdmin(): bool
     {
-        return $this->is_admin === true;
+        return $this->role === UserRole::Admin;
+    }
+
+    /**
+     * Check if the user is a manager.
+     */
+    public function isManager(): bool
+    {
+        return $this->role === UserRole::Manager;
+    }
+
+    /**
+     * Check if the user is staff (admin or manager).
+     */
+    public function isStaff(): bool
+    {
+        return $this->isAdmin() || $this->isManager();
+    }
+
+    /**
+     * Check if the user account is blocked.
+     */
+    public function isBlocked(): bool
+    {
+        return $this->blocked_at !== null;
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -38,7 +39,7 @@ class UserFactory extends Factory
             'facebook_url' => fake()->optional()->url(),
             'linkedin_url' => fake()->optional()->url(),
             'website_url' => fake()->optional()->url(),
-            'is_admin' => false,
+            'role' => UserRole::Member,
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
@@ -71,7 +72,18 @@ class UserFactory extends Factory
     public function admin(): static
     {
         return $this->state(fn (array $attributes) => [
-            'is_admin' => true,
+            'role' => UserRole::Admin,
+            'status' => 'verified',
+        ]);
+    }
+
+    /**
+     * Indicate a manager user.
+     */
+    public function manager(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => UserRole::Manager,
             'status' => 'verified',
         ]);
     }

@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class EnsureUserIsAdmin
+class EnsureUserIsStaff
 {
     /**
      * Handle an incoming request.
@@ -15,8 +15,8 @@ class EnsureUserIsAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (! $request->user()?->isAdmin()) {
-            abort(403, 'Unauthorized. Admin access required.');
+        if (! $request->user()?->isStaff()) {
+            abort(403, 'Unauthorized. Staff access required.');
         }
 
         return $next($request);

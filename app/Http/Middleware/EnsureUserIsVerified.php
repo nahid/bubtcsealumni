@@ -15,6 +15,14 @@ class EnsureUserIsVerified
      */
     public function handle(Request $request, Closure $next): Response
     {
+        if (! $request->user()?->isVerified()) {
+            return redirect()->route('dashboard')->with('error', 'Your account is not verified yet.');
+        }
+
+        if ($request->user()?->isBlocked()) {
+            abort(403, 'Your account has been blocked.');
+        }
+
         return $next($request);
     }
 }

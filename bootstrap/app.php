@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureUserIsAdmin;
+use App\Http\Middleware\EnsureUserIsStaff;
 use App\Http\Middleware\EnsureUserIsVerified;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -16,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'verified.alumni' => EnsureUserIsVerified::class,
             'admin' => EnsureUserIsAdmin::class,
+            'staff' => EnsureUserIsStaff::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -25,6 +25,7 @@ class JobPostFactory extends Factory
             'salary' => fake()->optional()->randomElement(['50k-80k BDT', '80k-120k BDT', '120k+ BDT']),
             'expiry_date' => fake()->dateTimeBetween('+1 week', '+3 months'),
             'status' => 'open',
+            'is_approved' => true,
         ];
     }
 
@@ -45,6 +46,16 @@ class JobPostFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'expiry_date' => fake()->dateTimeBetween('-1 month', '-1 day'),
+        ]);
+    }
+
+    /**
+     * Mark the job as pending approval.
+     */
+    public function pending(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_approved' => false,
         ]);
     }
 }

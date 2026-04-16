@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminJobController;
+use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\ApprovalController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -49,8 +52,8 @@ Route::middleware(['auth', 'verified.alumni'])->group(function () {
     Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::get('/profile/{user}', [ProfileController::class, 'show'])->name('profile.show');
 
-    // Admin Notices
-    Route::middleware('admin')->group(function () {
+    // Staff: Notices & Events (admin + manager)
+    Route::middleware('staff')->group(function () {
         Route::get('/notices', [NoticeController::class, 'index'])->name('notices.index');
         Route::get('/notices/create', [NoticeController::class, 'create'])->name('notices.create');
         Route::post('/notices', [NoticeController::class, 'store'])->name('notices.store');
@@ -59,6 +62,26 @@ Route::middleware(['auth', 'verified.alumni'])->group(function () {
         Route::delete('/notices/{notice}', [NoticeController::class, 'destroy'])->name('notices.destroy');
         Route::get('/notices/{notice}/participants', [NoticeController::class, 'participants'])->name('notices.participants');
         Route::get('/notices/{notice}/participants/export', [NoticeController::class, 'exportParticipants'])->name('notices.participants.export');
+    });
+
+    // Staff: Job Moderation (admin + manager)
+    Route::middleware('staff')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/dashboard', AdminDashboardController::class)->name('dashboard');
+        Route::get('/jobs', [AdminJobController::class, 'index'])->name('jobs.index');
+        Route::post('/jobs/{jobPost}/approve', [AdminJobController::class, 'approve'])->name('jobs.approve');
+        Route::post('/jobs/{jobPost}/reject', [AdminJobController::class, 'reject'])->name('jobs.reject');
+        Route::delete('/jobs/{jobPost}', [AdminJobController::class, 'destroy'])->name('jobs.destroy');
+    });
+
+    // Admin Only: User Management
+    Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
+        Route::post('/users/{user}/block', [AdminUserController::class, 'block'])->name('users.block');
+        Route::post('/users/{user}/unblock', [AdminUserController::class, 'unblock'])->name('users.unblock');
+        Route::post('/users/{user}/verify', [AdminUserController::class, 'verify'])->name('users.verify');
+        Route::put('/users/{user}/role', [AdminUserController::class, 'changeRole'])->name('users.role');
+        Route::put('/users/{user}/position', [AdminUserController::class, 'assignPosition'])->name('users.position');
+        Route::delete('/users/{user}/position', [AdminUserController::class, 'removePosition'])->name('users.position.remove');
     });
 
     // Public Events

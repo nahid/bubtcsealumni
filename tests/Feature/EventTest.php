@@ -7,7 +7,7 @@ use App\Models\User;
 // --- Admin: Event creation with form schema ---
 
 test('admin can create an event with a form schema', function () {
-    $admin = User::factory()->create(['is_admin' => true, 'status' => 'verified']);
+    $admin = User::factory()->admin()->create();
 
     $schema = [
         ['key' => 'field_1', 'type' => 'text', 'label' => 'Full Name', 'required' => true, 'placeholder' => 'Your name'],
@@ -33,7 +33,7 @@ test('admin can create an event with a form schema', function () {
 });
 
 test('form schema validation rejects missing label', function () {
-    $admin = User::factory()->create(['is_admin' => true, 'status' => 'verified']);
+    $admin = User::factory()->admin()->create();
 
     $this->actingAs($admin)
         ->post(route('notices.store'), [
@@ -49,7 +49,7 @@ test('form schema validation rejects missing label', function () {
 });
 
 test('form schema validation requires options for select type', function () {
-    $admin = User::factory()->create(['is_admin' => true, 'status' => 'verified']);
+    $admin = User::factory()->admin()->create();
 
     $this->actingAs($admin)
         ->post(route('notices.store'), [
@@ -178,7 +178,7 @@ test('event show displays registration data when already registered', function (
 // --- Admin participant management ---
 
 test('admin can view participant list', function () {
-    $admin = User::factory()->create(['is_admin' => true, 'status' => 'verified']);
+    $admin = User::factory()->admin()->create();
     $event = Notice::factory()->event()->withForm()->create(['is_published' => true]);
 
     $registrant = User::factory()->create(['status' => 'verified']);
@@ -199,7 +199,7 @@ test('admin can view participant list', function () {
 });
 
 test('admin can export participants as csv', function () {
-    $admin = User::factory()->create(['is_admin' => true, 'status' => 'verified']);
+    $admin = User::factory()->admin()->create();
     $event = Notice::factory()->event()->withForm()->create(['is_published' => true]);
 
     $registrant = User::factory()->create(['status' => 'verified', 'name' => 'CSV Tester']);
@@ -226,15 +226,13 @@ test('admin can export participants as csv', function () {
         ->toContain('CSV Tester');
 });
 
-test('non-admin cannot view participants', function () {
+test('non-staff cannot view participants', function () {
     $user = User::factory()->create(['status' => 'verified']);
     $event = Notice::factory()->event()->withForm()->create(['is_published' => true]);
 
-    // Note: admin middleware is a stub; this test verifies the route is accessible
-    // When admin middleware is implemented, this should assertForbidden()
     $this->actingAs($user)
         ->get(route('notices.participants', $event))
-        ->assertSuccessful();
+        ->assertForbidden();
 });
 
 // --- Notice model helpers ---

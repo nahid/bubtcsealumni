@@ -88,8 +88,28 @@
                                 </span>
                             @endif
                         </a>
-                        @if (auth()->user()->isAdmin())
-                            <a href="{{ route('notices.index') }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-700">Notices</a>
+                        @if (auth()->user()->isStaff())
+                            <div class="relative" id="admin-dropdown">
+                                <button onclick="document.getElementById('admin-menu').classList.toggle('hidden')" class="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700">
+                                    Admin
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                </button>
+                                <div id="admin-menu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                                    <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Dashboard</a>
+                                    @if (auth()->user()->isAdmin())
+                                        <a href="{{ route('admin.users.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Users</a>
+                                    @endif
+                                    <a href="{{ route('notices.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Notices</a>
+                                    <a href="{{ route('admin.jobs.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Jobs</a>
+                                </div>
+                            </div>
+                            <script>
+                                document.addEventListener('click', function(e) {
+                                    if (!document.getElementById('admin-dropdown').contains(e.target)) {
+                                        document.getElementById('admin-menu').classList.add('hidden');
+                                    }
+                                });
+                            </script>
                         @endif
                         <form method="POST" action="{{ route('logout') }}" class="inline">
                             @csrf

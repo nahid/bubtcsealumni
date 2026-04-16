@@ -19,6 +19,7 @@ class JobPostController extends Controller
     public function index(Request $request): View
     {
         $query = JobPost::with(['user', 'tags'])
+            ->approved()
             ->where('status', 'open')
             ->where('expiry_date', '>=', now())
             ->latest();

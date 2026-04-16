@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -31,7 +32,7 @@ class LoginController extends Controller
             ])->onlyInput('email');
         }
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
 
         if (! $user->isVerified()) {
@@ -39,6 +40,13 @@ class LoginController extends Controller
 
             return redirect()->route('login')
                 ->with('error', 'Your account is still pending verification by your reference.');
+        }
+
+        if ($user->isBlocked()) {
+            Auth::logout();
+
+            return redirect()->route('login')
+                ->with('error', 'Your account has been blocked. Please contact an administrator.');
         }
 
         $request->session()->regenerate();

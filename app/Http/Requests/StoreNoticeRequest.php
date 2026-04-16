@@ -13,7 +13,7 @@ class StoreNoticeRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()->isAdmin();
+        return $this->user()->isStaff();
     }
 
     protected function prepareForValidation(): void

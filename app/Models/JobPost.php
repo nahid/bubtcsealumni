@@ -4,12 +4,13 @@ namespace App\Models;
 
 use Database\Factories\JobPostFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-#[Fillable(['title', 'external_link', 'salary', 'expiry_date', 'status'])]
+#[Fillable(['title', 'external_link', 'salary', 'expiry_date', 'status', 'is_approved'])]
 class JobPost extends Model
 {
     /** @use HasFactory<JobPostFactory> */
@@ -24,6 +25,7 @@ class JobPost extends Model
     {
         return [
             'expiry_date' => 'date',
+            'is_approved' => 'boolean',
         ];
     }
 
@@ -57,5 +59,35 @@ class JobPost extends Model
     public function isOpen(): bool
     {
         return $this->status === 'open' && ! $this->isExpired();
+    }
+
+    /**
+     * Check if this job is approved.
+     */
+    public function isApproved(): bool
+    {
+        return $this->is_approved === true;
+    }
+
+    /**
+     * Scope to only approved jobs.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeApproved(Builder $query): Builder
+    {
+        return $query->where('is_approved', true);
+    }
+
+    /**
+     * Scope to only pending (unapproved) jobs.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopePending(Builder $query): Builder
+    {
+        return $query->where('is_approved', false);
     }
 }
