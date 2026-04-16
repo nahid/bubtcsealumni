@@ -13,29 +13,35 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-gray-50 text-gray-900 font-sans antialiased min-h-screen flex items-center justify-center p-6">
-    <div class="w-full max-w-md">
+    <div class="w-full max-w-md animate-fade-in">
         {{-- Logo --}}
         <div class="text-center mb-8">
-            <a href="{{ route('home') }}" class="text-2xl font-bold text-indigo-600 tracking-tight">BUBTAlumni</a>
-            <p class="text-sm text-gray-500 mt-1">BUBT CSE Alumni Network</p>
+            <a href="{{ route('home') }}" class="inline-flex items-center gap-2.5 group">
+                <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-sm">
+                    <span class="text-white text-lg font-bold">B</span>
+                </div>
+                <span class="text-2xl font-bold text-gray-900 tracking-tight group-hover:text-indigo-600 transition-colors">BUBTAlumni</span>
+            </a>
+            <p class="text-sm text-gray-500 mt-2">BUBT CSE Alumni Network</p>
         </div>
 
         {{-- Flash Messages --}}
-        @if (session('success'))
-            <div class="rounded-lg bg-green-50 border border-green-200 p-4 text-sm text-green-700 mb-4">
-                {{ session('success') }}
-            </div>
-        @endif
-        @if (session('error'))
-            <div class="rounded-lg bg-red-50 border border-red-200 p-4 text-sm text-red-700 mb-4">
-                {{ session('error') }}
-            </div>
-        @endif
+        <div class="space-y-3 mb-4">
+            @if (session('success'))
+                <x-alert type="success" :dismissible="true">{{ session('success') }}</x-alert>
+            @endif
+            @if (session('error'))
+                <x-alert type="error" :dismissible="true">{{ session('error') }}</x-alert>
+            @endif
+        </div>
 
         {{-- Card --}}
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+        <x-card class="p-8">
             @yield('content')
-        </div>
+        </x-card>
+
+        {{-- Footer link --}}
+        <p class="text-center text-xs text-gray-400 mt-8">&copy; {{ date('Y') }} BUBT CSE Alumni Network</p>
     </div>
 </body>
 </html>
