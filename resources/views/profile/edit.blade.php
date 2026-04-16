@@ -131,34 +131,47 @@
                 <div class="space-y-5">
                     <h3 class="text-sm font-semibold text-gray-900">Location</h3>
 
-                    <div>
-                        <label for="current_city" class="block text-sm font-medium text-gray-700 mb-1.5">Current City</label>
-                        <input type="text" name="current_city" id="current_city" value="{{ $user->current_city }}" placeholder="e.g. Dhaka, Chittagong, Dubai"
-                            class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all">
+                    <div class="relative">
+                        <label for="city-search" class="block text-sm font-medium text-gray-700 mb-1.5">Current City</label>
+                        <div class="relative">
+                            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            <input type="text" id="city-search" autocomplete="off" value="{{ $user->current_city }}" placeholder="Start typing a city name…"
+                                class="w-full rounded-xl border border-gray-300 pl-10 pr-10 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all">
+                            <div id="city-spinner" class="absolute right-3 top-1/2 -translate-y-1/2 hidden">
+                                <svg class="animate-spin w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>
+                            </div>
+                        </div>
+                        <div id="city-suggestions" class="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto hidden"></div>
+                        <input type="hidden" name="current_city" id="current_city" value="{{ $user->current_city }}">
                         <p class="hidden mt-1.5 text-sm text-red-600" id="error-current_city"></p>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label for="latitude" class="block text-sm font-medium text-gray-700 mb-1.5">Latitude</label>
-                            <input type="number" step="any" name="latitude" id="latitude" value="{{ $user->latitude }}" placeholder="e.g. 23.8103"
-                                class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all">
-                            <p class="hidden mt-1.5 text-sm text-red-600" id="error-latitude"></p>
+                    <div id="location-display" class="{{ $user->latitude ? '' : 'hidden' }} flex items-center gap-3 p-3 bg-emerald-50 rounded-xl border border-emerald-100">
+                        <svg class="w-5 h-5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <div class="text-sm">
+                            <span class="font-medium text-emerald-800" id="location-label">{{ $user->current_city }}</span>
+                            <span class="text-emerald-600 text-xs ml-2" id="location-coords">{{ $user->latitude ? "({$user->latitude}, {$user->longitude})" : '' }}</span>
                         </div>
-                        <div>
-                            <label for="longitude" class="block text-sm font-medium text-gray-700 mb-1.5">Longitude</label>
-                            <input type="number" step="any" name="longitude" id="longitude" value="{{ $user->longitude }}" placeholder="e.g. 90.4125"
-                                class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all">
-                            <p class="hidden mt-1.5 text-sm text-red-600" id="error-longitude"></p>
-                        </div>
+                        <button type="button" id="clear-location" class="ml-auto text-emerald-500 hover:text-red-500 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
                     </div>
 
-                    <button type="button" id="detect-location-btn"
-                        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                        <span id="detect-location-text">Use My Location</span>
-                    </button>
-                    <p class="text-xs text-gray-400">Your location helps other alumni find you on the map. Click the button to auto-detect.</p>
+                    <input type="hidden" name="latitude" id="latitude" value="{{ $user->latitude }}">
+                    <input type="hidden" name="longitude" id="longitude" value="{{ $user->longitude }}">
+
+                    <div class="flex items-center gap-3">
+                        <button type="button" id="detect-location-btn"
+                            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            <span id="detect-location-text">Use My Location</span>
+                        </button>
+                        <span class="text-xs text-gray-400">Or type a city name above to search</span>
+                    </div>
+                </div>
+
+                <div class="h-px bg-gray-100 my-6"></div>
+
                 <div class="mb-6">
                     <h3 class="text-sm font-semibold text-gray-900 mb-4">Tag Subscriptions</h3>
                     <select name="subscribed_tags[]" id="subscribed_tags" multiple="multiple"
@@ -269,6 +282,11 @@ $(function () {
                         '<img src="' + data.profile_photo_url + '" alt="Profile" class="h-20 w-20 rounded-full object-cover border-2 border-indigo-100">'
                     );
                 }
+
+                // Update lat/lon display if geocoded by server
+                if (data.user && data.user.latitude) {
+                    setLocation(data.user.current_city || '', data.user.latitude, data.user.longitude);
+                }
             },
             error: function (xhr) {
                 if (xhr.status === 422 && xhr.responseJSON?.errors) {
@@ -289,7 +307,123 @@ $(function () {
         });
     });
 
-    // Geolocation detection
+    // --- Location: City Autocomplete + Geolocation ---
+
+    let searchTimer = null;
+
+    function setLocation(city, lat, lon) {
+        $('#current_city').val(city);
+        $('#latitude').val(lat);
+        $('#longitude').val(lon);
+        $('#city-search').val(city);
+        $('#location-label').text(city);
+        $('#location-coords').text('(' + parseFloat(lat).toFixed(4) + ', ' + parseFloat(lon).toFixed(4) + ')');
+        $('#location-display').removeClass('hidden');
+        $('#city-suggestions').addClass('hidden');
+    }
+
+    function clearLocation() {
+        $('#current_city').val('');
+        $('#latitude').val('');
+        $('#longitude').val('');
+        $('#city-search').val('');
+        $('#location-display').addClass('hidden');
+        $('#location-label').text('');
+        $('#location-coords').text('');
+    }
+
+    $('#clear-location').on('click', clearLocation);
+
+    // City search with Nominatim
+    $('#city-search').on('input', function () {
+        const query = $(this).val().trim();
+        clearTimeout(searchTimer);
+
+        if (query.length < 3) {
+            $('#city-suggestions').addClass('hidden').empty();
+            return;
+        }
+
+        searchTimer = setTimeout(function () {
+            $('#city-spinner').removeClass('hidden');
+
+            $.ajax({
+                url: 'https://nominatim.openstreetmap.org/search',
+                data: { q: query, format: 'json', limit: 5, addressdetails: 1 },
+                headers: { 'Accept-Language': 'en' },
+                success: function (results) {
+                    const $list = $('#city-suggestions').empty();
+
+                    if (!results.length) {
+                        $list.html('<div class="px-4 py-3 text-sm text-gray-400">No results found</div>');
+                        $list.removeClass('hidden');
+                        return;
+                    }
+
+                    results.forEach(function (place) {
+                        const $item = $('<button type="button">')
+                            .addClass('w-full text-left px-4 py-2.5 hover:bg-indigo-50 transition-colors flex items-start gap-3 border-b border-gray-50 last:border-0')
+                            .html(
+                                '<svg class="w-4 h-4 text-gray-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>' +
+                                '<div class="min-w-0">' +
+                                    '<p class="text-sm font-medium text-gray-900 truncate">' + place.display_name.split(',').slice(0, 2).join(', ') + '</p>' +
+                                    '<p class="text-xs text-gray-400 truncate">' + place.display_name + '</p>' +
+                                '</div>'
+                            )
+                            .on('click', function () {
+                                const cityName = place.display_name.split(',').slice(0, 2).join(', ').trim();
+                                setLocation(cityName, place.lat, place.lon);
+                            });
+
+                        $list.append($item);
+                    });
+
+                    $list.removeClass('hidden');
+                },
+                error: function () {
+                    $('#city-suggestions').html('<div class="px-4 py-3 text-sm text-red-500">Search failed. Try again.</div>').removeClass('hidden');
+                },
+                complete: function () {
+                    $('#city-spinner').addClass('hidden');
+                }
+            });
+        }, 400);
+    });
+
+    // Close suggestions on click outside
+    $(document).on('click', function (e) {
+        if (!$(e.target).closest('#city-search, #city-suggestions').length) {
+            $('#city-suggestions').addClass('hidden');
+        }
+    });
+
+    // Keyboard navigation for suggestions
+    $('#city-search').on('keydown', function (e) {
+        const $items = $('#city-suggestions button');
+        if (!$items.length) return;
+
+        const $active = $items.filter('.bg-indigo-50');
+        let idx = $items.index($active);
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            $items.removeClass('bg-indigo-50');
+            idx = (idx + 1) % $items.length;
+            $items.eq(idx).addClass('bg-indigo-50');
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            $items.removeClass('bg-indigo-50');
+            idx = idx <= 0 ? $items.length - 1 : idx - 1;
+            $items.eq(idx).addClass('bg-indigo-50');
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (idx >= 0) $items.eq(idx).trigger('click');
+        } else if (e.key === 'Escape') {
+            $('#city-suggestions').addClass('hidden');
+        }
+    });
+
+    // Geolocation detection (reverse geocode to get city name)
     $('#detect-location-btn').on('click', function () {
         const $btn = $(this);
         const $text = $('#detect-location-text');
@@ -304,13 +438,34 @@ $(function () {
 
         navigator.geolocation.getCurrentPosition(
             function (position) {
-                $('#latitude').val(position.coords.latitude.toFixed(7));
-                $('#longitude').val(position.coords.longitude.toFixed(7));
-                $text.text('Location Detected ✓');
-                $btn.prop('disabled', false).removeClass('opacity-60');
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+
+                // Reverse geocode to get city name
+                $.ajax({
+                    url: 'https://nominatim.openstreetmap.org/reverse',
+                    data: { lat: lat, lon: lon, format: 'json', zoom: 10 },
+                    headers: { 'Accept-Language': 'en' },
+                    success: function (result) {
+                        const city = result.address
+                            ? (result.address.city || result.address.town || result.address.village || result.address.county || 'Unknown')
+                            : 'Unknown';
+                        const country = result.address ? (result.address.country || '') : '';
+                        const label = country ? city + ', ' + country : city;
+                        setLocation(label, lat, lon);
+                        $text.text('Location Detected ✓');
+                    },
+                    error: function () {
+                        setLocation('My Location', lat, lon);
+                        $text.text('Location Detected ✓');
+                    },
+                    complete: function () {
+                        $btn.prop('disabled', false).removeClass('opacity-60');
+                    }
+                });
             },
             function () {
-                alert('Unable to retrieve your location. Please enter it manually.');
+                alert('Unable to retrieve your location. Please allow location access and try again.');
                 $text.text('Use My Location');
                 $btn.prop('disabled', false).removeClass('opacity-60');
             },

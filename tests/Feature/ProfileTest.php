@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Support\Facades\Http;
 
 // --- Alumni ID generation ---
 
@@ -191,6 +192,8 @@ test('company website must be a valid url', function () {
 // --- Location ---
 
 test('user can update location information', function () {
+    Http::fake();
+
     $user = User::factory()->create();
 
     $this->actingAs($user)
@@ -205,6 +208,76 @@ test('user can update location information', function () {
     expect($user->current_city)->toBe('Dhaka')
         ->and((float) $user->latitude)->toBe(23.8103)
         ->and((float) $user->longitude)->toBe(90.4125);
+});
+
+test('changing city auto-geocodes lat/lon from openstreetmap when no manual coords given', function () {
+    Http::fake([
+        'nominatim.openstreetmap.org/*' => Http::response([
+            ['lat' => '23.8103', 'lon' => '90.4125', 'display_name' => 'Dhaka, Bangladesh'],
+        ]),
+    ]);
+
+    $user = User::factory()->create([
+        'current_city' => null,
+        'latitude' => null,
+        'longitude' => null,
+    ]);
+
+    $this->actingAs($user)
+        ->postJson(route('profile.update'), [
+            'current_city' => 'Dhaka',
+        ])
+        ->assertSuccessful();
+
+    $user->refresh();
+    expect($user->current_city)->toBe('Dhaka')
+        ->and((float) $user->latitude)->toBe(23.8103)
+        ->and((float) $user->longitude)->toBe(90.4125);
+
+    Http::assertSent(fn ($request) => str_contains($request->url(), 'nominatim.openstreetmap.org'));
+});
+
+test('manual lat/lon takes priority over geocoding', function () {
+    Http::fake();
+
+    $user = User::factory()->create(['current_city' => null, 'latitude' => null, 'longitude' => null]);
+
+    $this->actingAs($user)
+        ->postJson(route('profile.update'), [
+            'current_city' => 'Dhaka',
+            'latitude' => 10.0,
+            'longitude' => 20.0,
+        ])
+        ->assertSuccessful();
+
+    $user->refresh();
+    expect((float) $user->latitude)->toBe(10.0)
+        ->and((float) $user->longitude)->toBe(20.0);
+
+    Http::assertNothingSent();
+});
+
+test('geocoding failure does not break profile update', function () {
+    Http::fake([
+        'nominatim.openstreetmap.org/*' => Http::response([], 500),
+    ]);
+
+    $user = User::factory()->create([
+        'current_city' => null,
+        'latitude' => null,
+        'longitude' => null,
+    ]);
+
+    $this->actingAs($user)
+        ->postJson(route('profile.update'), [
+            'current_city' => 'UnknownCity',
+        ])
+        ->assertSuccessful();
+
+    $user->refresh();
+    expect($user->current_city)->toBe('UnknownCity')
+        ->and($user->latitude)->toBeNull()
+        ->and($user->longitude)->toBeNull();
 });
 
 test('latitude must be between -90 and 90', function (float $value) {
