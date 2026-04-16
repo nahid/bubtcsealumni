@@ -62,7 +62,7 @@
                 </div>
 
                 {{-- WhatsApp Number --}}
-                <div class="mb-6">
+                <div class="mb-5">
                     <label for="whatsapp_number" class="block text-sm font-medium text-gray-700 mb-1">WhatsApp Number</label>
                     <input type="text"
                            name="whatsapp_number"
@@ -72,6 +72,40 @@
                            class="w-full rounded-lg border-gray-300 shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500">
                     <p class="mt-1 text-xs text-gray-400">Include country code for WhatsApp link to work correctly.</p>
                     <p class="hidden mt-1 text-xs text-red-600" id="error-whatsapp_number"></p>
+                </div>
+
+                {{-- Social Media Links --}}
+                <div class="mb-5">
+                    <label for="facebook_url" class="block text-sm font-medium text-gray-700 mb-1">Facebook Profile URL</label>
+                    <input type="url"
+                           name="facebook_url"
+                           id="facebook_url"
+                           value="{{ $user->facebook_url }}"
+                           placeholder="https://facebook.com/username"
+                           class="w-full rounded-lg border-gray-300 shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    <p class="hidden mt-1 text-xs text-red-600" id="error-facebook_url"></p>
+                </div>
+
+                <div class="mb-5">
+                    <label for="linkedin_url" class="block text-sm font-medium text-gray-700 mb-1">LinkedIn Profile URL</label>
+                    <input type="url"
+                           name="linkedin_url"
+                           id="linkedin_url"
+                           value="{{ $user->linkedin_url }}"
+                           placeholder="https://linkedin.com/in/username"
+                           class="w-full rounded-lg border-gray-300 shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    <p class="hidden mt-1 text-xs text-red-600" id="error-linkedin_url"></p>
+                </div>
+
+                <div class="mb-6">
+                    <label for="website_url" class="block text-sm font-medium text-gray-700 mb-1">Personal Website</label>
+                    <input type="url"
+                           name="website_url"
+                           id="website_url"
+                           value="{{ $user->website_url }}"
+                           placeholder="https://yourwebsite.com"
+                           class="w-full rounded-lg border-gray-300 shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    <p class="hidden mt-1 text-xs text-red-600" id="error-website_url"></p>
                 </div>
 
                 {{-- Tag Subscriptions --}}
@@ -94,6 +128,10 @@
 
                 {{-- Read-only Info --}}
                 <div class="mb-6 grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+                    <div class="col-span-2">
+                        <span class="block text-xs font-medium text-gray-500">Alumni ID</span>
+                        <span class="text-sm text-gray-700 font-mono">{{ $user->alumni_id }}</span>
+                    </div>
                     <div>
                         <span class="block text-xs font-medium text-gray-500">Email</span>
                         <span class="text-sm text-gray-700">{{ $user->email }}</span>

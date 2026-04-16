@@ -1,0 +1,139 @@
+<?php
+
+use App\Models\User;
+
+// --- Alumni ID generation ---
+
+test('alumni id is auto-generated when a user is created', function () {
+    $user = User::factory()->create(['intake' => 6, 'shift' => 'evening']);
+
+    expect($user->fresh()->alumni_id)
+        ->toMatch('/^BCA-006-E-\d{6}$/');
+});
+
+test('alumni id uses D for day shift and E for evening shift', function (string $shift, string $code) {
+    $user = User::factory()->create(['intake' => 12, 'shift' => $shift]);
+
+    expect($user->fresh()->alumni_id)->toContain("-{$code}-");
+})->with([
+    'day shift' => ['day', 'D'],
+    'evening shift' => ['evening', 'E'],
+]);
+
+test('alumni id pads intake to 3 digits and id to 6 digits', function () {
+    $user = User::factory()->create(['intake' => 1, 'shift' => 'day']);
+    $expected = sprintf('BCA-001-D-%06d', $user->id);
+
+    expect($user->fresh()->alumni_id)->toBe($expected);
+});
+
+test('generateAlumniId static helper returns correct format', function () {
+    expect(User::generateAlumniId(6, 'evening', 2316))
+        ->toBe('BCA-006-E-002316');
+});
+
+// --- Profile edit page ---
+
+test('authenticated user can view profile edit page', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get(route('profile.edit'))
+        ->assertSuccessful()
+        ->assertSeeText('Edit Profile')
+        ->assertSee($user->fresh()->alumni_id);
+});
+
+test('guest cannot view profile edit page', function () {
+    $this->get(route('profile.edit'))
+        ->assertRedirect(route('login'));
+});
+
+// --- Social link updates ---
+
+test('user can update social media links', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->postJson(route('profile.update'), [
+            'facebook_url' => 'https://facebook.com/johndoe',
+            'linkedin_url' => 'https://linkedin.com/in/johndoe',
+            'website_url' => 'https://johndoe.com',
+        ])
+        ->assertSuccessful()
+        ->assertJsonFragment(['message' => 'Profile updated successfully!']);
+
+    $user->refresh();
+    expect($user->facebook_url)->toBe('https://facebook.com/johndoe')
+        ->and($user->linkedin_url)->toBe('https://linkedin.com/in/johndoe')
+        ->and($user->website_url)->toBe('https://johndoe.com');
+});
+
+test('social media links can be cleared', function () {
+    $user = User::factory()->create([
+        'facebook_url' => 'https://facebook.com/johndoe',
+        'linkedin_url' => 'https://linkedin.com/in/johndoe',
+        'website_url' => 'https://johndoe.com',
+    ]);
+
+    $this->actingAs($user)
+        ->postJson(route('profile.update'), [
+            'facebook_url' => null,
+            'linkedin_url' => null,
+            'website_url' => null,
+        ])
+        ->assertSuccessful();
+
+    $user->refresh();
+    expect($user->facebook_url)->toBeNull()
+        ->and($user->linkedin_url)->toBeNull()
+        ->and($user->website_url)->toBeNull();
+});
+
+test('social media links must be valid urls', function (string $field) {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->postJson(route('profile.update'), [
+            $field => 'not-a-url',
+        ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors($field);
+})->with(['facebook_url', 'linkedin_url', 'website_url']);
+
+// --- Public profile ---
+
+test('public profile shows alumni id and social links', function () {
+    $user = User::factory()->create([
+        'facebook_url' => 'https://facebook.com/johndoe',
+        'linkedin_url' => 'https://linkedin.com/in/johndoe',
+        'website_url' => 'https://johndoe.com',
+    ]);
+
+    $viewer = User::factory()->create();
+
+    $this->actingAs($viewer)
+        ->get(route('profile.show', $user))
+        ->assertSuccessful()
+        ->assertSee($user->fresh()->alumni_id)
+        ->assertSee('https://facebook.com/johndoe')
+        ->assertSee('https://linkedin.com/in/johndoe')
+        ->assertSee('https://johndoe.com');
+});
+
+test('public profile hides social links when not set', function () {
+    $user = User::factory()->create([
+        'facebook_url' => null,
+        'linkedin_url' => null,
+        'website_url' => null,
+    ]);
+
+    $viewer = User::factory()->create();
+
+    $this->actingAs($viewer)
+        ->get(route('profile.show', $user))
+        ->assertSuccessful()
+        ->assertDontSee('Facebook')
+        ->assertDontSee('LinkedIn')
+        ->assertDontSee('Website');
+});

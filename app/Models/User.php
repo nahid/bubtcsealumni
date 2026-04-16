@@ -5,8 +5,8 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -16,6 +16,7 @@ use Illuminate\Notifications\Notifiable;
     'name', 'email', 'mobile', 'password',
     'intake', 'shift', 'reference_email_1', 'reference_email_2',
     'status', 'bio', 'profile_photo', 'whatsapp_number',
+    'alumni_id', 'facebook_url', 'linkedin_url', 'website_url',
     'reference_1_approved_at', 'reference_2_approved_at',
 ])]
 #[Hidden(['password', 'remember_token'])]
@@ -118,5 +119,31 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->is_admin === true;
+    }
+
+    /**
+     * Generate the alumni ID from intake, shift, and record ID.
+     */
+    public static function generateAlumniId(int $intake, string $shift, int $id): string
+    {
+        $shiftCode = $shift === 'evening' ? 'E' : 'D';
+
+        $userId = str_pad($id, 6, '0', STR_PAD_LEFT);
+
+        return sprintf('BCA-%03d-%s-%06d', $intake, $shiftCode, $userId);
+    }
+
+    /**
+     * Boot the model and auto-assign alumni ID on creation.
+     */
+    protected static function booted(): void
+    {
+        static::created(function (User $user): void {
+            if ($user->alumni_id === null) {
+                $user->updateQuietly([
+                    'alumni_id' => static::generateAlumniId($user->intake, $user->shift, $user->id),
+                ]);
+            }
+        });
     }
 }

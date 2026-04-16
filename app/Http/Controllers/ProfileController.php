@@ -61,7 +61,7 @@ class ProfileController extends Controller
 
         return response()->json([
             'message' => 'Profile updated successfully!',
-            'user' => $user->only(['name', 'bio', 'whatsapp_number', 'profile_photo']),
+            'user' => $user->only(['name', 'bio', 'whatsapp_number', 'profile_photo', 'alumni_id', 'facebook_url', 'linkedin_url', 'website_url']),
             'profile_photo_url' => $user->profile_photo
                 ? Storage::disk('public')->url($user->profile_photo)
                 : null,
