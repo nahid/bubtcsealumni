@@ -2,7 +2,9 @@
 
 use App\Enums\BoardPosition;
 use App\Enums\UserRole;
+use App\Models\EventRegistration;
 use App\Models\JobPost;
+use App\Models\Notice;
 use App\Models\User;
 
 // --- Role System ---
@@ -315,4 +317,84 @@ test('manager can create a notice', function () {
             'is_published' => true,
         ])
         ->assertRedirect();
+});
+
+// --- Notice Search & Filter ---
+
+test('staff can search notices by title', function () {
+    $admin = User::factory()->admin()->create();
+    Notice::factory()->create(['title' => 'Alumni Reunion Announcement']);
+    Notice::factory()->create(['title' => 'Job Fair Update']);
+
+    $this->actingAs($admin)
+        ->get(route('notices.index', ['search' => 'Reunion']))
+        ->assertSuccessful()
+        ->assertSee('Alumni Reunion Announcement')
+        ->assertDontSee('Job Fair Update');
+});
+
+test('staff can filter notices by type', function () {
+    $admin = User::factory()->admin()->create();
+    Notice::factory()->create(['title' => 'General Notice', 'type' => 'notice']);
+    Notice::factory()->event()->create(['title' => 'Reunion Event']);
+
+    $this->actingAs($admin)
+        ->get(route('notices.index', ['type' => 'event']))
+        ->assertSuccessful()
+        ->assertSee('Reunion Event')
+        ->assertDontSee('General Notice');
+});
+
+test('staff can filter notices by published status', function () {
+    $admin = User::factory()->admin()->create();
+    Notice::factory()->create(['title' => 'Published Notice', 'is_published' => true]);
+    Notice::factory()->draft()->create(['title' => 'Draft Notice']);
+
+    $this->actingAs($admin)
+        ->get(route('notices.index', ['status' => 'draft']))
+        ->assertSuccessful()
+        ->assertSee('Draft Notice')
+        ->assertDontSee('Published Notice');
+});
+
+test('notice index shows participant count for events', function () {
+    $admin = User::factory()->admin()->create();
+    $event = Notice::factory()->withForm()->create(['title' => 'Test Event']);
+    EventRegistration::factory()->count(3)->create(['notice_id' => $event->id]);
+
+    $this->actingAs($admin)
+        ->get(route('notices.index'))
+        ->assertSuccessful()
+        ->assertSee('3 participants');
+});
+
+// --- Dashboard Role-Based Links ---
+
+test('admin dashboard shows manage users link for admins', function () {
+    $admin = User::factory()->admin()->create();
+
+    $this->actingAs($admin)
+        ->get(route('admin.dashboard'))
+        ->assertSuccessful()
+        ->assertSee('Manage Users');
+});
+
+test('manager dashboard hides manage users link', function () {
+    $manager = User::factory()->manager()->create();
+
+    $this->actingAs($manager)
+        ->get(route('admin.dashboard'))
+        ->assertSuccessful()
+        ->assertDontSee('Manage Users');
+});
+
+test('admin dashboard shows approve button for pending jobs', function () {
+    $admin = User::factory()->admin()->create();
+    JobPost::factory()->pending()->create(['title' => 'New Dev Role']);
+
+    $this->actingAs($admin)
+        ->get(route('admin.dashboard'))
+        ->assertSuccessful()
+        ->assertSee('New Dev Role')
+        ->assertSee('Approve');
 });

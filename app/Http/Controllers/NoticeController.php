@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateNoticeRequest;
 use App\Models\Notice;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class NoticeController extends Controller
@@ -14,11 +15,29 @@ class NoticeController extends Controller
     /**
      * Display all notices for admin management.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
-        $notices = Notice::with('user')
-            ->latest()
-            ->paginate(15);
+        $query = Notice::with('user')
+            ->withCount('registrations')
+            ->latest();
+
+        if ($search = $request->input('search')) {
+            $query->where('title', 'like', "%{$search}%");
+        }
+
+        if ($type = $request->input('type')) {
+            $query->where('type', $type);
+        }
+
+        if ($status = $request->input('status')) {
+            match ($status) {
+                'published' => $query->where('is_published', true),
+                'draft' => $query->where('is_published', false),
+                default => null,
+            };
+        }
+
+        $notices = $query->paginate(15)->withQueryString();
 
         return view('notices.index', compact('notices'));
     }

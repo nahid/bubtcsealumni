@@ -41,10 +41,12 @@
 
     {{-- Quick Links --}}
     <div class="flex flex-wrap gap-3 mb-8">
-        <x-button variant="primary" :href="route('admin.users.index')">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-            Manage Users
-        </x-button>
+        @if (auth()->user()->isAdmin())
+            <x-button variant="primary" :href="route('admin.users.index')">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                Manage Users
+            </x-button>
+        @endif
         <x-button variant="secondary" :href="route('notices.index')">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
             Notices
@@ -58,13 +60,17 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {{-- Recent Users --}}
         <div>
-            <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Recent Users</h2>
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wider">Recent Users</h2>
+                @if (auth()->user()->isAdmin())
+                    <a href="{{ route('admin.users.index') }}" class="text-xs text-indigo-600 hover:text-indigo-700 font-medium transition-colors">View All →</a>
+                @endif
+            </div>
             <x-card :padding="false" class="overflow-hidden">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50/80">
                         <tr>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Name</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Email</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Role</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Status</th>
                         </tr>
@@ -75,10 +81,12 @@
                                 <td class="px-4 py-3 whitespace-nowrap">
                                     <div class="flex items-center gap-2">
                                         <x-avatar :name="$user->name" size="xs" />
-                                        <span class="text-sm font-medium text-gray-900">{{ $user->name }}</span>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900">{{ $user->name }}</p>
+                                            <p class="text-xs text-gray-400">{{ $user->email }}</p>
+                                        </div>
                                     </div>
                                 </td>
-                                <td class="px-4 py-3 text-sm text-gray-500 whitespace-nowrap">{{ $user->email }}</td>
                                 <td class="px-4 py-3 whitespace-nowrap">
                                     <x-badge :color="$user->role->value === 'admin' ? 'danger' : ($user->role->value === 'manager' ? 'warning' : 'success')" size="xs">
                                         {{ $user->role->label() }}
@@ -87,7 +95,7 @@
                                 <td class="px-4 py-3 whitespace-nowrap">
                                     @if ($user->blocked_at)
                                         <x-badge color="danger" size="xs">Blocked</x-badge>
-                                    @elseif ($user->email_verified_at)
+                                    @elseif ($user->status === 'verified')
                                         <x-badge color="success" size="xs">Verified</x-badge>
                                     @else
                                         <x-badge color="warning" size="xs">Pending</x-badge>
@@ -96,7 +104,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="px-4 py-6 text-center text-sm text-gray-400">No users yet.</td>
+                                <td colspan="3" class="px-4 py-6 text-center text-sm text-gray-400">No users yet.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -106,26 +114,48 @@
 
         {{-- Pending Jobs --}}
         <div>
-            <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Pending Jobs</h2>
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wider">Pending Jobs</h2>
+                <a href="{{ route('admin.jobs.index', ['filter' => 'pending']) }}" class="text-xs text-indigo-600 hover:text-indigo-700 font-medium transition-colors">View All →</a>
+            </div>
             <x-card :padding="false" class="overflow-hidden">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50/80">
                         <tr>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Title</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Posted By</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Date</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         @forelse ($pendingJobs as $job)
                             <tr class="hover:bg-gray-50/50 transition-colors">
-                                <td class="px-4 py-3 text-sm font-medium text-gray-900 whitespace-nowrap">{{ Str::limit($job->title, 30) }}</td>
-                                <td class="px-4 py-3 text-sm text-gray-500 whitespace-nowrap">{{ $job->user->name }}</td>
-                                <td class="px-4 py-3 text-sm text-gray-400 whitespace-nowrap">{{ $job->created_at->format('M d, Y') }}</td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <p class="text-sm font-medium text-gray-900">{{ Str::limit($job->title, 30) }}</p>
+                                    <p class="text-xs text-gray-400">{{ $job->created_at->format('M d, Y') }}</p>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <div class="flex items-center gap-2">
+                                        <x-avatar :name="$job->user->name" size="xs" />
+                                        <span class="text-sm text-gray-500">{{ $job->user->name }}</span>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <div class="flex items-center gap-2">
+                                        <form method="POST" action="{{ route('admin.jobs.approve', $job) }}" class="inline">
+                                            @csrf
+                                            <x-button variant="success" size="xs" type="submit">Approve</x-button>
+                                        </form>
+                                        <form method="POST" action="{{ route('admin.jobs.reject', $job) }}" class="inline">
+                                            @csrf
+                                            <x-button variant="ghost" size="xs" type="submit">Reject</x-button>
+                                        </form>
+                                    </div>
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="3" class="px-4 py-6 text-center text-sm text-gray-400">No pending jobs.</td>
+                                <td colspan="3" class="px-4 py-6 text-center text-sm text-gray-400">No pending jobs. 🎉</td>
                             </tr>
                         @endforelse
                     </tbody>

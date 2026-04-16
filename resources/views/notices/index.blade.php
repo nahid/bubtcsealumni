@@ -10,6 +10,39 @@
         </x-button>
     </x-page-header>
 
+    {{-- Search & Filters --}}
+    <x-card class="mb-6">
+        <form method="GET" action="{{ route('notices.index') }}">
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="sm:col-span-2 relative">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by title…"
+                           class="w-full rounded-xl border border-gray-300 pl-10 pr-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all">
+                </div>
+                <div>
+                    <select name="type" class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all">
+                        <option value="">All Types</option>
+                        <option value="notice" @selected(request('type') === 'notice')>Notice</option>
+                        <option value="event" @selected(request('type') === 'event')>Event</option>
+                    </select>
+                </div>
+                <div class="flex gap-2">
+                    <select name="status" class="flex-1 rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all">
+                        <option value="">All Statuses</option>
+                        <option value="published" @selected(request('status') === 'published')>Published</option>
+                        <option value="draft" @selected(request('status') === 'draft')>Draft</option>
+                    </select>
+                    <x-button variant="primary" type="submit">Filter</x-button>
+                </div>
+            </div>
+            @if (request('search') || request('type') || request('status'))
+                <div class="mt-3">
+                    <a href="{{ route('notices.index') }}" class="text-sm text-gray-500 hover:text-gray-700 transition-colors">✕ Clear filters</a>
+                </div>
+            @endif
+        </form>
+    </x-card>
+
     @if ($notices->isEmpty())
         <x-card>
             <x-empty-state icon="document" title="No notices yet" description="Get started by creating your first notice or event.">
@@ -35,6 +68,12 @@
                                     <x-badge color="success">Published</x-badge>
                                 @else
                                     <x-badge color="warning">Draft</x-badge>
+                                @endif
+                                @if ($notice->type === 'event' && $notice->registrations_count > 0)
+                                    <x-badge color="primary">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                        {{ $notice->registrations_count }} {{ Str::plural('participant', $notice->registrations_count) }}
+                                    </x-badge>
                                 @endif
                             </div>
                             <h3 class="text-base font-semibold text-gray-900 leading-snug">{{ $notice->title }}</h3>

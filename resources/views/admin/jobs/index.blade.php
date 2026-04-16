@@ -63,7 +63,7 @@
                                 </div>
                             </td>
                             <td class="px-4 py-3 whitespace-nowrap">
-                                @if ($job->approved_at)
+                                @if ($job->is_approved)
                                     <x-badge color="success" size="xs">Approved</x-badge>
                                 @else
                                     <x-badge color="warning" size="xs">Pending</x-badge>
@@ -72,7 +72,7 @@
                             <td class="px-4 py-3 text-sm text-gray-400 whitespace-nowrap">{{ $job->created_at->format('M d, Y') }}</td>
                             <td class="px-4 py-3 whitespace-nowrap">
                                 <div class="flex items-center gap-2">
-                                    @if (! $job->approved_at)
+                                    @if (! $job->is_approved)
                                         <form method="POST" action="{{ route('admin.jobs.approve', $job) }}" class="inline">
                                             @csrf
                                             <x-button variant="success" size="xs" type="submit">Approve</x-button>
