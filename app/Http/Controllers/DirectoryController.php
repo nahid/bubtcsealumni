@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class DirectoryController extends Controller
 {
@@ -39,6 +40,26 @@ class DirectoryController extends Controller
             ->orderBy('intake')
             ->pluck('intake');
 
-        return view('directory.index', compact('alumni', 'intakes'));
+        // Alumni with location data for map view
+        $mapAlumni = User::where('status', 'verified')
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->select(['id', 'name', 'intake', 'shift', 'profile_photo', 'company_name', 'designation', 'current_city', 'latitude', 'longitude'])
+            ->get()
+            ->map(fn (User $u) => [
+                'id' => $u->id,
+                'name' => $u->name,
+                'intake' => $u->intake,
+                'shift' => $u->shift,
+                'photo' => $u->profile_photo ? Storage::disk('public')->url($u->profile_photo) : null,
+                'company' => $u->company_name,
+                'designation' => $u->designation,
+                'city' => $u->current_city,
+                'lat' => (float) $u->latitude,
+                'lng' => (float) $u->longitude,
+                'url' => route('profile.show', $u->id),
+            ]);
+
+        return view('directory.index', compact('alumni', 'intakes', 'mapAlumni'));
     }
 }

@@ -137,3 +137,158 @@ test('public profile hides social links when not set', function () {
         ->assertDontSee('LinkedIn')
         ->assertDontSee('Website');
 });
+
+// --- Work Information ---
+
+test('user can update work information', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->postJson(route('profile.update'), [
+            'company_name' => 'Google',
+            'designation' => 'Software Engineer',
+            'company_website' => 'https://google.com',
+        ])
+        ->assertSuccessful();
+
+    $user->refresh();
+    expect($user->company_name)->toBe('Google')
+        ->and($user->designation)->toBe('Software Engineer')
+        ->and($user->company_website)->toBe('https://google.com');
+});
+
+test('work information fields are optional', function () {
+    $user = User::factory()->create([
+        'company_name' => 'Old Corp',
+        'designation' => 'Old Title',
+    ]);
+
+    $this->actingAs($user)
+        ->postJson(route('profile.update'), [
+            'company_name' => null,
+            'designation' => null,
+            'company_website' => null,
+        ])
+        ->assertSuccessful();
+
+    $user->refresh();
+    expect($user->company_name)->toBeNull()
+        ->and($user->designation)->toBeNull()
+        ->and($user->company_website)->toBeNull();
+});
+
+test('company website must be a valid url', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->postJson(route('profile.update'), [
+            'company_website' => 'not-a-url',
+        ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('company_website');
+});
+
+// --- Location ---
+
+test('user can update location information', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->postJson(route('profile.update'), [
+            'current_city' => 'Dhaka',
+            'latitude' => 23.8103,
+            'longitude' => 90.4125,
+        ])
+        ->assertSuccessful();
+
+    $user->refresh();
+    expect($user->current_city)->toBe('Dhaka')
+        ->and((float) $user->latitude)->toBe(23.8103)
+        ->and((float) $user->longitude)->toBe(90.4125);
+});
+
+test('latitude must be between -90 and 90', function (float $value) {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->postJson(route('profile.update'), ['latitude' => $value])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('latitude');
+})->with([-91.0, 91.0]);
+
+test('longitude must be between -180 and 180', function (float $value) {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->postJson(route('profile.update'), ['longitude' => $value])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('longitude');
+})->with([-181.0, 181.0]);
+
+// --- Profile show with work & location ---
+
+test('public profile shows work information', function () {
+    $user = User::factory()->create([
+        'company_name' => 'Grameenphone',
+        'designation' => 'Lead Developer',
+        'company_website' => 'https://grameenphone.com',
+    ]);
+
+    $viewer = User::factory()->create();
+
+    $this->actingAs($viewer)
+        ->get(route('profile.show', $user))
+        ->assertSuccessful()
+        ->assertSee('Grameenphone')
+        ->assertSee('Lead Developer');
+});
+
+test('public profile shows location', function () {
+    $user = User::factory()->create([
+        'current_city' => 'Chittagong',
+    ]);
+
+    $viewer = User::factory()->create();
+
+    $this->actingAs($viewer)
+        ->get(route('profile.show', $user))
+        ->assertSuccessful()
+        ->assertSee('Chittagong');
+});
+
+// --- Directory map data ---
+
+test('directory page includes map data for alumni with location', function () {
+    User::factory()->create([
+        'current_city' => 'Dhaka',
+        'latitude' => 23.8103,
+        'longitude' => 90.4125,
+    ]);
+    User::factory()->create([
+        'latitude' => null,
+        'longitude' => null,
+    ]);
+
+    $viewer = User::factory()->create();
+
+    $this->actingAs($viewer)
+        ->get(route('directory.index'))
+        ->assertSuccessful()
+        ->assertSee('alumni-map')
+        ->assertSee('23.8103');
+});
+
+test('directory page shows company info on alumni cards', function () {
+    User::factory()->create([
+        'company_name' => 'TechCorp',
+        'designation' => 'CTO',
+    ]);
+
+    $viewer = User::factory()->create();
+
+    $this->actingAs($viewer)
+        ->get(route('directory.index'))
+        ->assertSuccessful()
+        ->assertSee('CTO')
+        ->assertSee('TechCorp');
+});

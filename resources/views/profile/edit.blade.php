@@ -99,7 +99,66 @@
 
                 <div class="h-px bg-gray-100 my-6"></div>
 
-                {{-- Tag Subscriptions --}}
+                {{-- Work Information --}}
+                <div class="space-y-5">
+                    <h3 class="text-sm font-semibold text-gray-900">Work Information</h3>
+
+                    <div>
+                        <label for="company_name" class="block text-sm font-medium text-gray-700 mb-1.5">Company Name</label>
+                        <input type="text" name="company_name" id="company_name" value="{{ $user->company_name }}" placeholder="e.g. Google, Grameenphone"
+                            class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all">
+                        <p class="hidden mt-1.5 text-sm text-red-600" id="error-company_name"></p>
+                    </div>
+
+                    <div>
+                        <label for="designation" class="block text-sm font-medium text-gray-700 mb-1.5">Designation</label>
+                        <input type="text" name="designation" id="designation" value="{{ $user->designation }}" placeholder="e.g. Software Engineer, Project Manager"
+                            class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all">
+                        <p class="hidden mt-1.5 text-sm text-red-600" id="error-designation"></p>
+                    </div>
+
+                    <div>
+                        <label for="company_website" class="block text-sm font-medium text-gray-700 mb-1.5">Company Website</label>
+                        <input type="url" name="company_website" id="company_website" value="{{ $user->company_website }}" placeholder="https://company.com"
+                            class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all">
+                        <p class="hidden mt-1.5 text-sm text-red-600" id="error-company_website"></p>
+                    </div>
+                </div>
+
+                <div class="h-px bg-gray-100 my-6"></div>
+
+                {{-- Location --}}
+                <div class="space-y-5">
+                    <h3 class="text-sm font-semibold text-gray-900">Location</h3>
+
+                    <div>
+                        <label for="current_city" class="block text-sm font-medium text-gray-700 mb-1.5">Current City</label>
+                        <input type="text" name="current_city" id="current_city" value="{{ $user->current_city }}" placeholder="e.g. Dhaka, Chittagong, Dubai"
+                            class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all">
+                        <p class="hidden mt-1.5 text-sm text-red-600" id="error-current_city"></p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="latitude" class="block text-sm font-medium text-gray-700 mb-1.5">Latitude</label>
+                            <input type="number" step="any" name="latitude" id="latitude" value="{{ $user->latitude }}" placeholder="e.g. 23.8103"
+                                class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all">
+                            <p class="hidden mt-1.5 text-sm text-red-600" id="error-latitude"></p>
+                        </div>
+                        <div>
+                            <label for="longitude" class="block text-sm font-medium text-gray-700 mb-1.5">Longitude</label>
+                            <input type="number" step="any" name="longitude" id="longitude" value="{{ $user->longitude }}" placeholder="e.g. 90.4125"
+                                class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all">
+                            <p class="hidden mt-1.5 text-sm text-red-600" id="error-longitude"></p>
+                        </div>
+                    </div>
+
+                    <button type="button" id="detect-location-btn"
+                        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        <span id="detect-location-text">Use My Location</span>
+                    </button>
+                    <p class="text-xs text-gray-400">Your location helps other alumni find you on the map. Click the button to auto-detect.</p>
                 <div class="mb-6">
                     <h3 class="text-sm font-semibold text-gray-900 mb-4">Tag Subscriptions</h3>
                     <select name="subscribed_tags[]" id="subscribed_tags" multiple="multiple"
@@ -228,6 +287,35 @@ $(function () {
                 $btn.prop('disabled', false).text('Save Changes');
             }
         });
+    });
+
+    // Geolocation detection
+    $('#detect-location-btn').on('click', function () {
+        const $btn = $(this);
+        const $text = $('#detect-location-text');
+
+        if (!navigator.geolocation) {
+            alert('Geolocation is not supported by your browser.');
+            return;
+        }
+
+        $text.text('Detecting…');
+        $btn.prop('disabled', true).addClass('opacity-60');
+
+        navigator.geolocation.getCurrentPosition(
+            function (position) {
+                $('#latitude').val(position.coords.latitude.toFixed(7));
+                $('#longitude').val(position.coords.longitude.toFixed(7));
+                $text.text('Location Detected ✓');
+                $btn.prop('disabled', false).removeClass('opacity-60');
+            },
+            function () {
+                alert('Unable to retrieve your location. Please enter it manually.');
+                $text.text('Use My Location');
+                $btn.prop('disabled', false).removeClass('opacity-60');
+            },
+            { enableHighAccuracy: true, timeout: 10000 }
+        );
     });
 });
 </script>

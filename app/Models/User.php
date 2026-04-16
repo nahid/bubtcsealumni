@@ -20,6 +20,8 @@ use Illuminate\Notifications\Notifiable;
     'status', 'role', 'board_position', 'blocked_at',
     'bio', 'profile_photo', 'whatsapp_number',
     'alumni_id', 'facebook_url', 'linkedin_url', 'website_url',
+    'company_name', 'designation', 'company_website',
+    'current_city', 'latitude', 'longitude',
     'reference_1_approved_at', 'reference_2_approved_at',
 ])]
 #[Hidden(['password', 'remember_token'])]
@@ -42,6 +44,8 @@ class User extends Authenticatable
             'role' => UserRole::class,
             'board_position' => BoardPosition::class,
             'blocked_at' => 'datetime',
+            'latitude' => 'decimal:7',
+            'longitude' => 'decimal:7',
             'reference_1_approved_at' => 'datetime',
             'reference_2_approved_at' => 'datetime',
         ];
