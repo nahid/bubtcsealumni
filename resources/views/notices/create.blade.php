@@ -4,115 +4,71 @@
 
 @section('content')
     <div class="max-w-2xl mx-auto">
-        <a href="{{ route('notices.index') }}" class="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors mb-6 group">
-            <svg class="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-            </svg>
-            Back to Notices
-        </a>
+        <x-page-header title="Create Notice" subtitle="Publish a notice or event for all alumni to see.">
+            <x-button variant="ghost" size="sm" :href="route('notices.index')">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                Back
+            </x-button>
+        </x-page-header>
 
-        <div class="mb-6">
-            <h1 class="text-2xl font-bold text-gray-900">Create Notice</h1>
-            <p class="mt-1 text-sm text-gray-500">Publish a notice or event for all alumni to see.</p>
-        </div>
-
-        <div class="bg-white rounded-xl border border-gray-200 shadow-sm">
-            <form method="POST" action="{{ route('notices.store') }}" class="p-6 space-y-5">
+        <x-card>
+            <form method="POST" action="{{ route('notices.store') }}" class="space-y-5">
                 @csrf
 
-                {{-- Title --}}
-                <div>
-                    <label for="title" class="block text-sm font-medium text-gray-700 mb-1.5">Title</label>
-                    <input type="text"
-                           name="title"
-                           id="title"
-                           value="{{ old('title') }}"
-                           required
-                           placeholder="Enter a clear, descriptive title…"
-                           class="w-full rounded-lg border-gray-300 shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500 placeholder:text-gray-400">
-                    @error('title')
-                        <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
+                <x-input name="title" label="Title" :error="$errors->first('title')" value="{{ old('title') }}" required placeholder="Enter a clear, descriptive title…" />
 
-                {{-- Type & Event Date Row --}}
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    {{-- Type --}}
                     <div>
                         <label for="type" class="block text-sm font-medium text-gray-700 mb-1.5">Type</label>
-                        <select name="type"
-                                id="type"
-                                required
-                                class="w-full rounded-lg border-gray-300 shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        <select name="type" id="type" required
+                                class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all">
                             <option value="notice" @selected(old('type') === 'notice')>📢 Notice</option>
                             <option value="event" @selected(old('type') === 'event')>📅 Event</option>
                         </select>
                         @error('type')
-                            <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
+                            <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    {{-- Event Date --}}
                     <div id="event-date-group">
                         <label for="event_date" class="block text-sm font-medium text-gray-700 mb-1.5">Event Date</label>
-                        <input type="date"
-                               name="event_date"
-                               id="event_date"
-                               value="{{ old('event_date') }}"
-                               min="{{ date('Y-m-d') }}"
-                               class="w-full rounded-lg border-gray-300 shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        <input type="date" name="event_date" id="event_date" value="{{ old('event_date') }}" min="{{ date('Y-m-d') }}"
+                               class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all">
                         @error('event_date')
-                            <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
+                            <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
                 </div>
 
                 {{-- Registration Form Builder (events only) --}}
                 <div id="form-builder-section" style="display: none;">
-                    <div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                    <div class="rounded-xl border border-gray-200 bg-gray-50/80 p-5">
                         <div class="flex items-center justify-between mb-4">
                             <div>
                                 <h3 class="text-sm font-semibold text-gray-900">Registration Form Fields</h3>
                                 <p class="text-xs text-gray-500 mt-0.5">Add custom fields for the event registration form.</p>
                             </div>
-                            <button type="button" id="add-field-btn"
-                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-700 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition">
+                            <x-button variant="ghost" size="xs" type="button" id="add-field-btn">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                                 Add Field
-                            </button>
+                            </x-button>
                         </div>
                         <div id="form-fields" class="space-y-3"></div>
                         <p id="no-fields-msg" class="text-xs text-gray-400 text-center py-4">No fields added yet. Click "Add Field" to start building your form.</p>
                     </div>
                     <input type="hidden" name="form_schema" id="form-schema-input" value="{{ old('form_schema', '[]') }}">
                     @error('form_schema')
-                        <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
+                        <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
 
-                {{-- Body --}}
-                <div>
-                    <label for="body" class="block text-sm font-medium text-gray-700 mb-1.5">Content</label>
-                    <textarea name="body"
-                              id="body"
-                              rows="8"
-                              required
-                              maxlength="5000"
-                              placeholder="Write your notice content…"
-                              class="w-full rounded-lg border-gray-300 shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500 placeholder:text-gray-400">{{ old('body') }}</textarea>
-                    <p class="mt-1 text-xs text-gray-400">Maximum 5,000 characters</p>
-                    @error('body')
-                        <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
+                <x-textarea name="body" label="Content" :error="$errors->first('body')" rows="8" required maxlength="5000" placeholder="Write your notice content…" hint="Maximum 5,000 characters">{{ old('body') }}</x-textarea>
 
                 {{-- Published Toggle --}}
-                <div class="rounded-lg bg-gray-50 border border-gray-200 p-4">
+                <div class="rounded-xl bg-gray-50/80 border border-gray-100 p-4">
                     <label class="flex items-center gap-3 cursor-pointer">
                         <input type="hidden" name="is_published" value="0">
-                        <input type="checkbox"
-                               name="is_published"
-                               value="1"
+                        <input type="checkbox" name="is_published" value="1"
                                {{ old('is_published', true) ? 'checked' : '' }}
                                class="h-4 w-4 rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
                         <div>
@@ -122,18 +78,12 @@
                     </label>
                 </div>
 
-                {{-- Submit --}}
                 <div class="flex items-center gap-3 pt-2">
-                    <button type="submit"
-                            class="flex-1 sm:flex-none px-6 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition shadow-sm">
-                        Create Notice
-                    </button>
-                    <a href="{{ route('notices.index') }}" class="text-sm text-gray-500 hover:text-gray-700 transition-colors">
-                        Cancel
-                    </a>
+                    <x-button variant="primary">Create Notice</x-button>
+                    <x-button variant="ghost" type="button" :href="route('notices.index')">Cancel</x-button>
                 </div>
             </form>
-        </div>
+        </x-card>
     </div>
 @endsection
 

@@ -4,44 +4,45 @@
 
 @section('content')
     <div class="max-w-2xl mx-auto">
-        <a href="{{ route('dashboard') }}" class="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors mb-6 group">
-            <svg class="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-            </svg>
+        <a href="{{ route('dashboard') }}" class="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors mb-6">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
             Back to Dashboard
         </a>
 
         {{-- Event Details --}}
-        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
+        <x-card class="mb-6">
             <div class="flex items-center gap-2 mb-3">
-                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/10">
+                <x-badge color="info">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                     Event
-                </span>
+                </x-badge>
                 @if ($notice->event_date)
-                    <span class="text-xs text-indigo-600 font-medium">📅 {{ $notice->event_date->format('M d, Y') }}</span>
+                    <span class="text-xs text-indigo-600 font-medium flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        {{ $notice->event_date->format('M d, Y') }}
+                    </span>
                 @endif
             </div>
             <h1 class="text-2xl font-bold text-gray-900 mb-3">{{ $notice->title }}</h1>
             <div class="text-sm text-gray-600 leading-relaxed whitespace-pre-line">{{ $notice->body }}</div>
-        </div>
+        </x-card>
 
         {{-- Already Registered --}}
         @if ($registration)
-            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+            <x-card>
                 <div class="flex items-center gap-2 mb-4">
-                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600">
+                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-600">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                     </span>
-                    <h2 class="text-lg font-semibold text-green-700">Already Registered ✓</h2>
+                    <h2 class="text-lg font-semibold text-emerald-700">Already Registered ✓</h2>
                 </div>
                 <p class="text-sm text-gray-500 mb-4">You registered on {{ $registration->created_at->format('M d, Y \a\t h:i A') }}.</p>
 
                 @if ($notice->form_schema && $registration->form_data)
                     <div class="space-y-3 border-t border-gray-100 pt-4">
                         @foreach ($notice->form_schema as $field)
-                            <div>
-                                <span class="block text-xs font-medium text-gray-500">{{ $field['label'] }}</span>
+                            <div class="bg-gray-50/80 rounded-xl p-3">
+                                <span class="block text-xs font-medium text-gray-500 mb-0.5">{{ $field['label'] }}</span>
                                 <span class="text-sm text-gray-900">
                                     @php
                                         $entry = $registration->form_data[$field['key']] ?? [];
@@ -57,16 +58,15 @@
                         @endforeach
                     </div>
                 @endif
-            </div>
+            </x-card>
 
         {{-- Registration Form --}}
         @elseif ($notice->hasRegistrationForm())
-            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+            <x-card>
                 <h2 class="text-lg font-semibold text-gray-900 mb-1">Register for this Event</h2>
                 <p class="text-sm text-gray-500 mb-5">Fill out the form below to register.</p>
 
-                {{-- Feedback --}}
-                <div id="registration-feedback" class="hidden mb-4 rounded-lg p-4 text-sm"></div>
+                <div id="registration-feedback" class="hidden mb-4 rounded-xl p-4 text-sm"></div>
 
                 <form id="registration-form" class="space-y-5">
                     @csrf
@@ -80,26 +80,21 @@
                             </label>
 
                             @if ($field['type'] === 'text')
-                                <input type="text"
-                                       name="{{ $field['key'] }}"
-                                       id="field-{{ $field['key'] }}"
+                                <input type="text" name="{{ $field['key'] }}" id="field-{{ $field['key'] }}"
                                        placeholder="{{ $field['placeholder'] ?? '' }}"
                                        {{ !empty($field['required']) ? 'required' : '' }}
-                                       class="w-full rounded-lg border-gray-300 shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500 placeholder:text-gray-400">
+                                       class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all">
 
                             @elseif ($field['type'] === 'textarea')
-                                <textarea name="{{ $field['key'] }}"
-                                          id="field-{{ $field['key'] }}"
-                                          rows="4"
+                                <textarea name="{{ $field['key'] }}" id="field-{{ $field['key'] }}" rows="4"
                                           placeholder="{{ $field['placeholder'] ?? '' }}"
                                           {{ !empty($field['required']) ? 'required' : '' }}
-                                          class="w-full rounded-lg border-gray-300 shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500 placeholder:text-gray-400"></textarea>
+                                          class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all resize-y"></textarea>
 
                             @elseif ($field['type'] === 'select')
-                                <select name="{{ $field['key'] }}"
-                                        id="field-{{ $field['key'] }}"
+                                <select name="{{ $field['key'] }}" id="field-{{ $field['key'] }}"
                                         {{ !empty($field['required']) ? 'required' : '' }}
-                                        class="w-full rounded-lg border-gray-300 shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                        class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all">
                                     <option value="">— Select —</option>
                                     @foreach ($field['options'] ?? [] as $option)
                                         <option value="{{ $option }}">{{ $option }}</option>
@@ -109,10 +104,8 @@
                             @elseif ($field['type'] === 'radio')
                                 <div class="space-y-2 mt-1">
                                     @foreach ($field['options'] ?? [] as $option)
-                                        <label class="flex items-center gap-2 cursor-pointer">
-                                            <input type="radio"
-                                                   name="{{ $field['key'] }}"
-                                                   value="{{ $option }}"
+                                        <label class="flex items-center gap-2.5 cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition">
+                                            <input type="radio" name="{{ $field['key'] }}" value="{{ $option }}"
                                                    {{ !empty($field['required']) ? 'required' : '' }}
                                                    class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
                                             <span class="text-sm text-gray-700">{{ $option }}</span>
@@ -123,10 +116,8 @@
                             @elseif ($field['type'] === 'checkbox')
                                 <div class="space-y-2 mt-1">
                                     @foreach ($field['options'] ?? [] as $option)
-                                        <label class="flex items-center gap-2 cursor-pointer">
-                                            <input type="checkbox"
-                                                   name="{{ $field['key'] }}[]"
-                                                   value="{{ $option }}"
+                                        <label class="flex items-center gap-2.5 cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition">
+                                            <input type="checkbox" name="{{ $field['key'] }}[]" value="{{ $option }}"
                                                    class="h-4 w-4 rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
                                             <span class="text-sm text-gray-700">{{ $option }}</span>
                                         </label>
@@ -134,19 +125,15 @@
                                 </div>
                             @endif
 
-                            <p class="hidden mt-1.5 text-xs text-red-600" id="error-{{ $field['key'] }}"></p>
+                            <p class="hidden mt-1.5 text-sm text-red-600" id="error-{{ $field['key'] }}"></p>
                         </div>
                     @endforeach
 
                     <div class="pt-2">
-                        <button type="submit"
-                                id="register-submit"
-                                class="w-full px-6 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition shadow-sm disabled:opacity-50">
-                            Register
-                        </button>
+                        <x-button variant="primary" class="w-full" id="register-submit">Register</x-button>
                     </div>
                 </form>
-            </div>
+            </x-card>
         @endif
     </div>
 @endsection
