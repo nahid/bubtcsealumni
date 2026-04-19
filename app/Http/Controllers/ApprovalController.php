@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\Auth\RegistrationApprovedMail;
+use App\Mail\Auth\RegistrationRejectedMail;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class ApprovalController extends Controller
 {
@@ -22,6 +25,8 @@ class ApprovalController extends Controller
         if ($user->fresh()->isBothReferencesApproved()) {
             $user->update(['status' => 'verified']);
 
+            Mail::to($user->email)->send(new RegistrationApprovedMail($user));
+
             return response()->json(['message' => "{$user->name} has been fully verified!"]);
         }
 
@@ -34,6 +39,8 @@ class ApprovalController extends Controller
     public function reject(Request $request, User $user): JsonResponse
     {
         $this->authorizedReferencePosition($request, $user);
+
+        Mail::to($user->email)->send(new RegistrationRejectedMail($user));
 
         $user->delete();
 

@@ -131,6 +131,29 @@
 
 @push('styles')
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<style>
+    .alumni-marker { background: transparent !important; border: none !important; }
+    .alumni-marker-wrapper {
+        width: 40px; height: 40px; border-radius: 50%;
+        border: 3px solid #4f46e5; background: #fff;
+        overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.25);
+        display: flex; align-items: center; justify-content: center;
+        transition: transform .15s ease;
+    }
+    .alumni-marker:hover .alumni-marker-wrapper { transform: scale(1.15); }
+    .alumni-marker-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+    .alumni-marker-default {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        color: #fff; font-weight: 700; font-size: 13px; letter-spacing: .5px;
+    }
+    .alumni-marker-arrow {
+        width: 0; height: 0; margin: -2px auto 0;
+        border-left: 7px solid transparent; border-right: 7px solid transparent;
+        border-top: 10px solid #4f46e5;
+    }
+    .leaflet-popup-content-wrapper { border-radius: 12px !important; box-shadow: 0 4px 16px rgba(0,0,0,.12) !important; }
+    .leaflet-popup-content { margin: 10px 12px !important; }
+</style>
 @endpush
 
 @push('scripts')
@@ -169,6 +192,35 @@
     $gridBtn.addEventListener('click', showGrid);
     $mapBtn.addEventListener('click', showMap);
 
+    function createMarkerIcon(alumni) {
+        const size = 40;
+
+        if (alumni.photo) {
+            return L.divIcon({
+                className: 'alumni-marker',
+                html: '<div class="alumni-marker-wrapper">' +
+                          '<img src="' + alumni.photo + '" alt="' + alumni.name + '" />' +
+                      '</div>' +
+                      '<div class="alumni-marker-arrow"></div>',
+                iconSize: [size, size + 10],
+                iconAnchor: [size / 2, size + 10],
+                popupAnchor: [0, -(size + 6)]
+            });
+        }
+
+        const initials = alumni.name.split(' ').map(w => w.charAt(0)).join('').substring(0, 2).toUpperCase();
+        return L.divIcon({
+            className: 'alumni-marker',
+            html: '<div class="alumni-marker-wrapper alumni-marker-default">' +
+                      '<span>' + initials + '</span>' +
+                  '</div>' +
+                  '<div class="alumni-marker-arrow"></div>',
+            iconSize: [size, size + 10],
+            iconAnchor: [size / 2, size + 10],
+            popupAnchor: [0, -(size + 6)]
+        });
+    }
+
     function initMap() {
         const alumni = @json($mapAlumni);
         if (!alumni.length) return;
@@ -183,30 +235,30 @@
         const bounds = [];
 
         alumni.forEach(function (a) {
-            const initials = a.name.charAt(0).toUpperCase();
             const photoHtml = a.photo
                 ? '<img src="' + a.photo + '" class="w-10 h-10 rounded-full object-cover" alt="' + a.name + '">'
-                : '<div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm">' + initials + '</div>';
+                : '<div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm">' + a.name.charAt(0).toUpperCase() + '</div>';
 
             const workLine = a.designation
                 ? '<p class="text-xs text-gray-500">' + a.designation + (a.company ? ' at ' + a.company : '') + '</p>'
                 : (a.company ? '<p class="text-xs text-gray-500">' + a.company + '</p>' : '');
 
             const cityLine = a.city
-                ? '<p class="text-xs text-gray-400">' + a.city + '</p>'
+                ? '<p class="text-xs text-gray-400 flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>' + a.city + '</p>'
                 : '';
 
-            const popup = '<div class="flex items-center gap-3 min-w-[200px]">' +
+            const popup = '<div class="flex items-center gap-3 min-w-[200px] p-1">' +
                 photoHtml +
                 '<div>' +
-                    '<a href="' + a.url + '" class="text-sm font-semibold text-gray-900 hover:text-indigo-600">' + a.name + '</a>' +
+                    '<a href="' + a.url + '" class="text-sm font-semibold text-gray-900 hover:text-indigo-600 no-underline">' + a.name + '</a>' +
                     '<p class="text-xs text-gray-500">Intake ' + a.intake + ' · ' + a.shift.charAt(0).toUpperCase() + a.shift.slice(1) + '</p>' +
                     workLine +
                     cityLine +
                 '</div>' +
             '</div>';
 
-            L.marker([a.lat, a.lng]).addTo(map).bindPopup(popup);
+            const icon = createMarkerIcon(a);
+            L.marker([a.lat, a.lng], { icon: icon }).addTo(map).bindPopup(popup);
             bounds.push([a.lat, a.lng]);
         });
 
@@ -214,7 +266,6 @@
             map.fitBounds(bounds, { padding: [30, 30] });
         }
 
-        // Fix map size when container becomes visible
         setTimeout(function () { map.invalidateSize(); }, 100);
     }
 })();

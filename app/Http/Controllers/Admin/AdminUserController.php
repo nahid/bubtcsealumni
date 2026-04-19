@@ -5,10 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\BoardPosition;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
+use App\Mail\Auth\AccountBlockedMail;
+use App\Mail\Auth\AccountUnblockedMail;
+use App\Mail\Auth\AccountVerifiedMail;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 
 class AdminUserController extends Controller
@@ -58,6 +62,8 @@ class AdminUserController extends Controller
 
         $user->update(['blocked_at' => now()]);
 
+        Mail::to($user->email)->send(new AccountBlockedMail($user));
+
         return back()->with('success', "{$user->name} has been blocked.");
     }
 
@@ -68,6 +74,8 @@ class AdminUserController extends Controller
     {
         $user->update(['blocked_at' => null]);
 
+        Mail::to($user->email)->send(new AccountUnblockedMail($user));
+
         return back()->with('success', "{$user->name} has been unblocked.");
     }
 
@@ -77,6 +85,8 @@ class AdminUserController extends Controller
     public function verify(User $user): RedirectResponse
     {
         $user->update(['status' => 'verified']);
+
+        Mail::to($user->email)->send(new AccountVerifiedMail($user));
 
         return back()->with('success', "{$user->name} has been verified.");
     }
