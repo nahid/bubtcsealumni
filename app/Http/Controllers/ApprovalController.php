@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\Auth\ReferenceApprovedMail;
 use App\Mail\Auth\RegistrationApprovedMail;
 use App\Mail\Auth\RegistrationRejectedMail;
 use App\Models\User;
@@ -29,6 +30,8 @@ class ApprovalController extends Controller
 
             return response()->json(['message' => "{$user->name} has been fully verified!"]);
         }
+
+        Mail::to($user->email)->send(new ReferenceApprovedMail($user, $request->user()->name));
 
         return response()->json(['message' => "You approved {$user->name}. Waiting for the other reference."]);
     }

@@ -40,6 +40,50 @@
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* Testimonial auto-fade slider */
+@utility animate-testimonial-fade {
+    animation: testimonialFade 20s ease-in-out infinite;
+}
+
+@keyframes testimonialFade {
+    0%, 20% { opacity: 1; transform: translateX(0); }
+    25%, 45% { opacity: 0; transform: translateX(-20px); }
+    50% { opacity: 0; transform: translateX(20px); }
+    55%, 75% { opacity: 1; transform: translateX(0); }
+    80%, 100% { opacity: 0; transform: translateX(-20px); }
+}
+
+/* Staggered testimonial delays — each slide gets a portion of the total cycle */
+.testimonial-slide:nth-child(1) { animation-delay: 0s; }
+.testimonial-slide:nth-child(2) { animation-delay: 5s; }
+.testimonial-slide:nth-child(3) { animation-delay: 10s; }
+.testimonial-slide:nth-child(4) { animation-delay: 15s; }
+
+/* Float animation for hero images */
+@utility animate-float {
+    animation: float 6s ease-in-out infinite;
+}
+
+@utility animate-float-delayed {
+    animation: float 6s ease-in-out 2s infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+}
+
+/* Subtle gradient shift */
+@utility animate-gradient {
+    background-size: 200% 200%;
+    animation: gradientShift 8s ease infinite;
+}
+
+@keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
 /* Select2 modern styling */
 .select2-container--default .select2-selection--multiple {
     border: 1px solid #d1d5db;
