@@ -6,6 +6,7 @@ use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
@@ -17,13 +18,22 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Admin user
+        $adminPasswordHash = (string) config('admin.password_hash', '');
+        if ($adminPasswordHash === '') {
+            $adminPasswordHash = Hash::make(Str::password(24));
+        }
+
         User::factory()->admin()->create([
-            'name' => 'Admin User',
-            'email' => 'admin@bubtalumni.test',
-            'mobile' => '01700000000',
-            'intake' => 1,
+            'name' => (string) config('admin.name', 'Primary Admin'),
+            'email' => (string) config('admin.email', 'admin@example.com'),
+            'mobile' => (string) config('admin.mobile', '01700000000'),
+            'intake' => (int) config('admin.intake', 1),
+            'password' => $adminPasswordHash,
         ]);
+
+        if (app()->isProduction()) {
+            return;
+        }
 
         // Verified alumni
         $verifiedUsers = User::factory(20)->create();

@@ -1,0 +1,3 @@
+-- Intentionally left empty.
+-- Database bootstrap is handled by POSTGRES_DB, POSTGRES_USER, and POSTGRES_PASSWORD
+-- from the .env-driven docker-compose configuration.
