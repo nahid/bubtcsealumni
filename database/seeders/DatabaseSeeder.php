@@ -18,9 +18,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $adminPasswordHash = (string) config('admin.password_hash', '');
-        if ($adminPasswordHash === '') {
-            $adminPasswordHash = Hash::make(Str::password(24));
+        $adminPassword = (string) config('admin.password', '');
+        if ($adminPassword === '') {
+            $adminPassword = Str::password(24);
         }
 
         User::factory()->admin()->create([
@@ -28,7 +28,7 @@ class DatabaseSeeder extends Seeder
             'email' => (string) config('admin.email', 'admin@example.com'),
             'mobile' => (string) config('admin.mobile', '01700000000'),
             'intake' => (int) config('admin.intake', 1),
-            'password' => $adminPasswordHash,
+            'password' => Hash::make($adminPassword),
         ]);
 
         if (app()->isProduction()) {
