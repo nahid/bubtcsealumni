@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminJobController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\ApprovalController;
+use App\Http\Controllers\Auth\InvitationController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\DashboardController;
@@ -25,6 +26,9 @@ Route::middleware('guest')->group(function () {
 
     Route::get('/login', [LoginController::class, 'create'])->name('login');
     Route::post('/login', [LoginController::class, 'store']);
+
+    Route::get('/invitation/{token}', [InvitationController::class, 'show'])->name('invitation.show');
+    Route::post('/invitation/{token}', [InvitationController::class, 'store'])->name('invitation.store');
 });
 
 // Authenticated + verified routes
@@ -75,6 +79,8 @@ Route::middleware(['auth', 'verified.alumni'])->group(function () {
     // Admin Only: User Management
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
+        Route::get('/users/create', [AdminUserController::class, 'create'])->name('users.create');
+        Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
         Route::post('/users/{user}/block', [AdminUserController::class, 'block'])->name('users.block');
         Route::post('/users/{user}/unblock', [AdminUserController::class, 'unblock'])->name('users.unblock');
         Route::post('/users/{user}/verify', [AdminUserController::class, 'verify'])->name('users.verify');
