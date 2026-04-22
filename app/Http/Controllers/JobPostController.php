@@ -106,6 +106,7 @@ class JobPostController extends Controller
 
         foreach ($tags as $tag) {
             $subscribers = User::whereHas('subscribedTags', fn ($q) => $q->where('tags.id', $tag->id))
+                ->where('is_looking_for_job', true)
                 ->where('id', '!=', $jobPost->user_id)
                 ->whereNotIn('id', $notifiedUserIds)
                 ->get();

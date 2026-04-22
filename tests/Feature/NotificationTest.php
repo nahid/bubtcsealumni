@@ -46,7 +46,7 @@ test('subscriber receives notification for each matching tag only once', functio
     $tag1 = Tag::factory()->create(['name' => 'PHP', 'slug' => 'php']);
     $tag2 = Tag::factory()->create(['name' => 'Laravel', 'slug' => 'laravel']);
 
-    $subscriber = User::factory()->create();
+    $subscriber = User::factory()->create(['is_looking_for_job' => true]);
     $subscriber->subscribedTags()->attach([$tag1->id, $tag2->id], ['subscribed_at' => now()]);
 
     $poster = User::factory()->create();

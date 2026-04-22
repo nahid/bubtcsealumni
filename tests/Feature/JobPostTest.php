@@ -104,7 +104,7 @@ test('creating a job post notifies tag subscribers', function () {
     Notification::fake();
 
     $tag = Tag::factory()->create(['name' => 'PHP', 'slug' => 'php']);
-    $subscriber = User::factory()->create();
+    $subscriber = User::factory()->create(['is_looking_for_job' => true]);
     $subscriber->subscribedTags()->attach($tag, ['subscribed_at' => now()]);
 
     $poster = User::factory()->create();
@@ -119,6 +119,27 @@ test('creating a job post notifies tag subscribers', function () {
         ]);
 
     Notification::assertSentTo($subscriber, NewJobMatchesTagNotification::class);
+});
+
+test('subscribers with is_looking_for_job disabled are not notified', function () {
+    Notification::fake();
+
+    $tag = Tag::factory()->create(['name' => 'PHP', 'slug' => 'php']);
+    $subscriber = User::factory()->create(['is_looking_for_job' => false]);
+    $subscriber->subscribedTags()->attach($tag, ['subscribed_at' => now()]);
+
+    $poster = User::factory()->create();
+
+    $this->actingAs($poster)
+        ->post(route('jobs.store'), [
+            'title' => 'PHP Developer',
+            'external_link' => 'https://example.com/jobs/4',
+            'salary' => '80k BDT',
+            'expiry_date' => now()->addMonth()->format('Y-m-d'),
+            'tags' => [$tag->id],
+        ]);
+
+    Notification::assertNotSentTo($subscriber, NewJobMatchesTagNotification::class);
 });
 
 test('job poster is not notified about their own job', function () {

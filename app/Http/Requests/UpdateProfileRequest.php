@@ -38,6 +38,7 @@ class UpdateProfileRequest extends FormRequest
             'profile_photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'subscribed_tags' => ['nullable', 'array'],
             'subscribed_tags.*' => ['integer', 'exists:tags,id'],
+            'is_looking_for_job' => ['nullable', 'boolean'],
         ];
     }
 }

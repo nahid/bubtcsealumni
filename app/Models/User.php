@@ -17,7 +17,7 @@ use Illuminate\Notifications\Notifiable;
 #[Fillable([
     'name', 'email', 'mobile', 'password',
     'intake', 'shift', 'reference_email_1', 'reference_email_2',
-    'status', 'role', 'board_position', 'blocked_at',
+    'status', 'role', 'board_position', 'blocked_at', 'is_looking_for_job',
     'bio', 'profile_photo', 'whatsapp_number',
     'alumni_id', 'facebook_url', 'linkedin_url', 'website_url',
     'company_name', 'designation', 'company_website',
@@ -44,6 +44,7 @@ class User extends Authenticatable
             'role' => UserRole::class,
             'board_position' => BoardPosition::class,
             'blocked_at' => 'datetime',
+            'is_looking_for_job' => 'boolean',
             'latitude' => 'decimal:7',
             'longitude' => 'decimal:7',
             'reference_1_approved_at' => 'datetime',
