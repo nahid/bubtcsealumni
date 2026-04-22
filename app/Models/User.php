@@ -180,12 +180,15 @@ class User extends Authenticatable
      */
     protected static function booted(): void
     {
-        static::created(function (User $user): void {
-            if ($user->alumni_id === null) {
-                $user->updateQuietly([
-                    'alumni_id' => static::generateAlumniId($user->intake, $user->shift, $user->id),
-                ]);
-            }
+        static::created(function (User $user) {
+            // This works because the ID now exists
+            $id = static::generateAlumniId($user->intake, $user->shift, $user->id);
+
+            // Explicitly set the attribute on the object
+            $user->setAttribute('alumni_id', $id);
+
+            // Use saveQuietly to prevent an infinite loop of 'updating' events
+            $user->saveQuietly();
         });
     }
 }
