@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-#[Fillable(['title', 'external_link', 'salary', 'expiry_date', 'status', 'is_approved'])]
+#[Fillable(['title', 'description', 'external_link', 'salary', 'expiry_date', 'status', 'is_approved'])]
 class JobPost extends Model
 {
     /** @use HasFactory<JobPostFactory> */

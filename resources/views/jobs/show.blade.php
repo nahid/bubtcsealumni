@@ -43,6 +43,16 @@
                 </div>
             </div>
 
+            {{-- Description --}}
+            @if($jobPost->description)
+                <div class="mb-6">
+                    <p class="text-xs text-gray-500 uppercase tracking-wide font-medium mb-2">Description</p>
+                    <div class="prose prose-sm max-w-none text-gray-700 leading-relaxed">
+                        {!! $jobPost->description !!}
+                    </div>
+                </div>
+            @endif
+
             {{-- Tags --}}
             <div class="mb-6">
                 <p class="text-xs text-gray-500 uppercase tracking-wide font-medium mb-2">Tags</p>

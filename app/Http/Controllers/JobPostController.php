@@ -56,8 +56,15 @@ class JobPostController extends Controller
         $validated = $request->validated();
 
         /** @var JobPost $jobPost */
+        $description = $validated['description'] ?? null;
+        if ($description !== null) {
+            $description = strip_tags($description, '<p><br><strong><em><u><s><a><ul><ol><li><h1><h2><h3><blockquote><code>');
+            $description = trim($description) === '' ? null : $description;
+        }
+
         $jobPost = $request->user()->jobPosts()->create([
             'title' => $validated['title'],
+            'description' => $description,
             'external_link' => $validated['external_link'],
             'salary' => $validated['salary'],
             'expiry_date' => $validated['expiry_date'],
