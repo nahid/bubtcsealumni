@@ -17,6 +17,8 @@
 
                 <x-input name="title" label="Job Title" :error="$errors->first('title')" value="{{ old('title') }}" required placeholder="e.g. Senior Laravel Developer" />
 
+                <x-input name="company_name" label="Company Name" :error="$errors->first('company_name')" value="{{ old('company_name') }}" required placeholder="e.g. Acme Corp" />
+
                 <div>
                     <label for="description-editor" class="block text-sm font-medium text-gray-700 mb-1.5">Description <span class="text-gray-400 font-normal">(optional)</span></label>
                     <div id="description-editor" class="bg-white rounded-xl border border-gray-300 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">{!! old('description') !!}</div>

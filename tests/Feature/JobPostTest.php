@@ -84,6 +84,7 @@ test('authenticated user can create a job post', function () {
     $this->actingAs($user)
         ->post(route('jobs.store'), [
             'title' => 'Senior Laravel Developer',
+            'company_name' => 'Acme Corp',
             'external_link' => 'https://example.com/jobs/1',
             'salary' => '100k-150k BDT',
             'expiry_date' => now()->addMonth()->format('Y-m-d'),
@@ -112,6 +113,7 @@ test('creating a job post notifies tag subscribers', function () {
     $this->actingAs($poster)
         ->post(route('jobs.store'), [
             'title' => 'PHP Developer',
+            'company_name' => 'Acme Corp',
             'external_link' => 'https://example.com/jobs/2',
             'salary' => '80k BDT',
             'expiry_date' => now()->addMonth()->format('Y-m-d'),
@@ -133,6 +135,7 @@ test('subscribers with is_looking_for_job disabled are not notified', function (
     $this->actingAs($poster)
         ->post(route('jobs.store'), [
             'title' => 'PHP Developer',
+            'company_name' => 'Acme Corp',
             'external_link' => 'https://example.com/jobs/4',
             'salary' => '80k BDT',
             'expiry_date' => now()->addMonth()->format('Y-m-d'),
@@ -152,6 +155,7 @@ test('job poster is not notified about their own job', function () {
     $this->actingAs($poster)
         ->post(route('jobs.store'), [
             'title' => 'PHP Developer',
+            'company_name' => 'Acme Corp',
             'external_link' => 'https://example.com/jobs/3',
             'salary' => '80k BDT',
             'expiry_date' => now()->addMonth()->format('Y-m-d'),
@@ -167,6 +171,7 @@ test('job post creation requires valid data', function (string $field, mixed $va
 
     $data = [
         'title' => 'Valid Title',
+        'company_name' => 'Acme Corp',
         'external_link' => 'https://example.com',
         'salary' => '80k BDT',
         'expiry_date' => now()->addMonth()->format('Y-m-d'),

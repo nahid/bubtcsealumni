@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminJobController;
+use App\Http\Controllers\Admin\AdminTagController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\ApprovalController;
 use App\Http\Controllers\Auth\InvitationController;
@@ -74,6 +75,13 @@ Route::middleware(['auth', 'verified.alumni'])->group(function () {
         Route::post('/jobs/{jobPost}/approve', [AdminJobController::class, 'approve'])->name('jobs.approve');
         Route::post('/jobs/{jobPost}/reject', [AdminJobController::class, 'reject'])->name('jobs.reject');
         Route::delete('/jobs/{jobPost}', [AdminJobController::class, 'destroy'])->name('jobs.destroy');
+
+        Route::get('/tags', [AdminTagController::class, 'index'])->name('tags.index');
+        Route::get('/tags/create', [AdminTagController::class, 'create'])->name('tags.create');
+        Route::post('/tags', [AdminTagController::class, 'store'])->name('tags.store');
+        Route::get('/tags/{tag}/edit', [AdminTagController::class, 'edit'])->name('tags.edit');
+        Route::put('/tags/{tag}', [AdminTagController::class, 'update'])->name('tags.update');
+        Route::delete('/tags/{tag}', [AdminTagController::class, 'destroy'])->name('tags.destroy');
     });
 
     // Admin Only: User Management

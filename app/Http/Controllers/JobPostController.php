@@ -25,7 +25,10 @@ class JobPostController extends Controller
             ->latest();
 
         if ($search = $request->input('search')) {
-            $query->where('title', 'like', "%{$search}%");
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('company_name', 'like', "%{$search}%");
+            });
         }
 
         if ($tagSlug = $request->input('tag')) {
@@ -64,6 +67,7 @@ class JobPostController extends Controller
 
         $jobPost = $request->user()->jobPosts()->create([
             'title' => $validated['title'],
+            'company_name' => $validated['company_name'],
             'description' => $description,
             'external_link' => $validated['external_link'],
             'salary' => $validated['salary'],
