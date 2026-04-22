@@ -31,10 +31,6 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make($adminPassword),
         ]);
 
-        if (app()->isProduction()) {
-            return;
-        }
-
         // Verified alumni
         $verifiedUsers = User::factory(20)->create();
 
