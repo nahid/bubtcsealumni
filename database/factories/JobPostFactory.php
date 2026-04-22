@@ -21,6 +21,8 @@ class JobPostFactory extends Factory
         return [
             'user_id' => User::factory(),
             'title' => fake()->jobTitle(),
+            'company_name' => fake()->company(),
+            'description' => fake()->optional(0.7)->passthrough('<p>'.fake()->paragraph(3).'</p><ul><li>'.fake()->sentence().'</li><li>'.fake()->sentence().'</li></ul>'),
             'external_link' => fake()->url(),
             'salary' => fake()->optional()->randomElement(['50k-80k BDT', '80k-120k BDT', '120k+ BDT']),
             'expiry_date' => fake()->dateTimeBetween('+1 week', '+3 months'),

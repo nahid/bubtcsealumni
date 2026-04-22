@@ -24,6 +24,8 @@ class StoreJobPostRequest extends FormRequest
     {
         return [
             'title' => ['required', 'string', 'max:255'],
+            'company_name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:10000'],
             'external_link' => ['required', 'url', 'max:500'],
             'salary' => ['nullable', 'string', 'max:100'],
             'expiry_date' => ['required', 'date', 'after:today'],

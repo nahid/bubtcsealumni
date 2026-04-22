@@ -173,7 +173,20 @@
                 <div class="h-px bg-gray-100 my-6"></div>
 
                 <div class="mb-6">
-                    <h3 class="text-sm font-semibold text-gray-900 mb-4">Tag Subscriptions</h3>
+                    <h3 class="text-sm font-semibold text-gray-900 mb-4">Job Notifications</h3>
+
+                    <label for="is_looking_for_job" class="flex items-start gap-3 p-4 rounded-xl border border-gray-200 bg-gray-50/60 cursor-pointer hover:bg-gray-50 transition-colors mb-4">
+                        <input type="hidden" name="is_looking_for_job" value="0">
+                        <input type="checkbox" name="is_looking_for_job" id="is_looking_for_job" value="1"
+                            @checked($user->is_looking_for_job)
+                            class="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                        <span class="flex-1">
+                            <span class="block text-sm font-medium text-gray-900">Looking for a job</span>
+                            <span class="block text-xs text-gray-500 mt-0.5">Turn this on to receive email notifications when new jobs match your subscribed tags below.</span>
+                        </span>
+                    </label>
+
+                    <label for="subscribed_tags" class="block text-sm font-medium text-gray-700 mb-1.5">Tag Subscriptions</label>
                     <select name="subscribed_tags[]" id="subscribed_tags" multiple="multiple"
                         class="w-full rounded-xl border border-gray-300 text-sm">
                         @foreach ($allTags as $tag)

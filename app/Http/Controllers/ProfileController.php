@@ -67,6 +67,8 @@ class ProfileController extends Controller
             }
         }
 
+        $validated['is_looking_for_job'] = $request->boolean('is_looking_for_job');
+
         $user->update($validated);
 
         // Sync subscribed tags

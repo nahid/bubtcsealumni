@@ -17,6 +17,17 @@
 
                 <x-input name="title" label="Job Title" :error="$errors->first('title')" value="{{ old('title') }}" required placeholder="e.g. Senior Laravel Developer" />
 
+                <x-input name="company_name" label="Company Name" :error="$errors->first('company_name')" value="{{ old('company_name') }}" required placeholder="e.g. Acme Corp" />
+
+                <div>
+                    <label for="description-editor" class="block text-sm font-medium text-gray-700 mb-1.5">Description <span class="text-gray-400 font-normal">(optional)</span></label>
+                    <div id="description-editor" class="bg-white rounded-xl border border-gray-300 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">{!! old('description') !!}</div>
+                    <input type="hidden" name="description" id="description-input" value="{{ old('description') }}">
+                    @error('description')
+                        <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <x-input name="external_link" label="Application Link" type="url" :error="$errors->first('external_link')" value="{{ old('external_link') }}" required placeholder="https://example.com/apply" />
 
                 <div class="grid grid-cols-2 gap-4">
@@ -61,13 +72,43 @@
     </div>
 @endsection
 
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet" />
+<style>
+    #description-editor { min-height: 160px; }
+    #description-editor .ql-editor { min-height: 140px; font-size: 0.875rem; }
+    .ql-toolbar.ql-snow { border: 0; border-bottom: 1px solid #e5e7eb; border-top-left-radius: 0.75rem; border-top-right-radius: 0.75rem; }
+    .ql-container.ql-snow { border: 0; border-bottom-left-radius: 0.75rem; border-bottom-right-radius: 0.75rem; }
+</style>
+@endpush
+
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
 <script>
 $(function () {
     $('#tags').select2({
         placeholder: 'Select tags for this job…',
         allowClear: true,
         width: '100%'
+    });
+
+    const quill = new Quill('#description-editor', {
+        theme: 'snow',
+        placeholder: 'Describe the role, responsibilities, and requirements…',
+        modules: {
+            toolbar: [
+                ['bold', 'italic', 'underline'],
+                [{ list: 'ordered' }, { list: 'bullet' }],
+                ['link'],
+                ['clean'],
+            ],
+        },
+    });
+
+    const descInput = document.getElementById('description-input');
+    quill.on('text-change', function () {
+        const html = quill.getSemanticHTML();
+        descInput.value = quill.getText().trim().length === 0 ? '' : html;
     });
 });
 </script>

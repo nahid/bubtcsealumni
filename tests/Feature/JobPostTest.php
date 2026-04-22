@@ -84,6 +84,7 @@ test('authenticated user can create a job post', function () {
     $this->actingAs($user)
         ->post(route('jobs.store'), [
             'title' => 'Senior Laravel Developer',
+            'company_name' => 'Acme Corp',
             'external_link' => 'https://example.com/jobs/1',
             'salary' => '100k-150k BDT',
             'expiry_date' => now()->addMonth()->format('Y-m-d'),
@@ -104,7 +105,7 @@ test('creating a job post notifies tag subscribers', function () {
     Notification::fake();
 
     $tag = Tag::factory()->create(['name' => 'PHP', 'slug' => 'php']);
-    $subscriber = User::factory()->create();
+    $subscriber = User::factory()->create(['is_looking_for_job' => true]);
     $subscriber->subscribedTags()->attach($tag, ['subscribed_at' => now()]);
 
     $poster = User::factory()->create();
@@ -112,6 +113,7 @@ test('creating a job post notifies tag subscribers', function () {
     $this->actingAs($poster)
         ->post(route('jobs.store'), [
             'title' => 'PHP Developer',
+            'company_name' => 'Acme Corp',
             'external_link' => 'https://example.com/jobs/2',
             'salary' => '80k BDT',
             'expiry_date' => now()->addMonth()->format('Y-m-d'),
@@ -119,6 +121,28 @@ test('creating a job post notifies tag subscribers', function () {
         ]);
 
     Notification::assertSentTo($subscriber, NewJobMatchesTagNotification::class);
+});
+
+test('subscribers with is_looking_for_job disabled are not notified', function () {
+    Notification::fake();
+
+    $tag = Tag::factory()->create(['name' => 'PHP', 'slug' => 'php']);
+    $subscriber = User::factory()->create(['is_looking_for_job' => false]);
+    $subscriber->subscribedTags()->attach($tag, ['subscribed_at' => now()]);
+
+    $poster = User::factory()->create();
+
+    $this->actingAs($poster)
+        ->post(route('jobs.store'), [
+            'title' => 'PHP Developer',
+            'company_name' => 'Acme Corp',
+            'external_link' => 'https://example.com/jobs/4',
+            'salary' => '80k BDT',
+            'expiry_date' => now()->addMonth()->format('Y-m-d'),
+            'tags' => [$tag->id],
+        ]);
+
+    Notification::assertNotSentTo($subscriber, NewJobMatchesTagNotification::class);
 });
 
 test('job poster is not notified about their own job', function () {
@@ -131,6 +155,7 @@ test('job poster is not notified about their own job', function () {
     $this->actingAs($poster)
         ->post(route('jobs.store'), [
             'title' => 'PHP Developer',
+            'company_name' => 'Acme Corp',
             'external_link' => 'https://example.com/jobs/3',
             'salary' => '80k BDT',
             'expiry_date' => now()->addMonth()->format('Y-m-d'),
@@ -146,6 +171,7 @@ test('job post creation requires valid data', function (string $field, mixed $va
 
     $data = [
         'title' => 'Valid Title',
+        'company_name' => 'Acme Corp',
         'external_link' => 'https://example.com',
         'salary' => '80k BDT',
         'expiry_date' => now()->addMonth()->format('Y-m-d'),

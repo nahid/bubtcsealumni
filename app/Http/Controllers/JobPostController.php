@@ -25,7 +25,10 @@ class JobPostController extends Controller
             ->latest();
 
         if ($search = $request->input('search')) {
-            $query->where('title', 'like', "%{$search}%");
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('company_name', 'like', "%{$search}%");
+            });
         }
 
         if ($tagSlug = $request->input('tag')) {
@@ -56,8 +59,16 @@ class JobPostController extends Controller
         $validated = $request->validated();
 
         /** @var JobPost $jobPost */
+        $description = $validated['description'] ?? null;
+        if ($description !== null) {
+            $description = strip_tags($description, '<p><br><strong><em><u><s><a><ul><ol><li><h1><h2><h3><blockquote><code>');
+            $description = trim($description) === '' ? null : $description;
+        }
+
         $jobPost = $request->user()->jobPosts()->create([
             'title' => $validated['title'],
+            'company_name' => $validated['company_name'],
+            'description' => $description,
             'external_link' => $validated['external_link'],
             'salary' => $validated['salary'],
             'expiry_date' => $validated['expiry_date'],
@@ -99,6 +110,7 @@ class JobPostController extends Controller
 
         foreach ($tags as $tag) {
             $subscribers = User::whereHas('subscribedTags', fn ($q) => $q->where('tags.id', $tag->id))
+                ->where('is_looking_for_job', true)
                 ->where('id', '!=', $jobPost->user_id)
                 ->whereNotIn('id', $notifiedUserIds)
                 ->get();

@@ -46,7 +46,7 @@ test('subscriber receives notification for each matching tag only once', functio
     $tag1 = Tag::factory()->create(['name' => 'PHP', 'slug' => 'php']);
     $tag2 = Tag::factory()->create(['name' => 'Laravel', 'slug' => 'laravel']);
 
-    $subscriber = User::factory()->create();
+    $subscriber = User::factory()->create(['is_looking_for_job' => true]);
     $subscriber->subscribedTags()->attach([$tag1->id, $tag2->id], ['subscribed_at' => now()]);
 
     $poster = User::factory()->create();
@@ -54,6 +54,7 @@ test('subscriber receives notification for each matching tag only once', functio
     $this->actingAs($poster)
         ->post(route('jobs.store'), [
             'title' => 'Full Stack Developer',
+            'company_name' => 'Acme Corp',
             'external_link' => 'https://example.com/jobs/5',
             'salary' => '100k BDT',
             'expiry_date' => now()->addMonth()->format('Y-m-d'),

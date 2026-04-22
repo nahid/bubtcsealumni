@@ -5,14 +5,19 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\BoardPosition;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StoreAlumniUserRequest;
 use App\Mail\Auth\AccountBlockedMail;
 use App\Mail\Auth\AccountUnblockedMail;
 use App\Mail\Auth\AccountVerifiedMail;
+use App\Mail\Auth\AlumniInvitationMail;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class AdminUserController extends Controller
@@ -49,6 +54,48 @@ class AdminUserController extends Controller
         $positions = BoardPosition::cases();
 
         return view('admin.users.index', compact('users', 'roles', 'positions'));
+    }
+
+    /**
+     * Show the form for creating a new alumni user.
+     */
+    public function create(): View
+    {
+        return view('admin.users.create', [
+            'roles' => UserRole::cases(),
+        ]);
+    }
+
+    /**
+     * Create a new alumni user and send an invitation email.
+     */
+    public function store(StoreAlumniUserRequest $request): RedirectResponse
+    {
+        $validated = $request->validated();
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'mobile' => $validated['mobile'],
+            'intake' => $validated['intake'],
+            'shift' => $validated['shift'],
+            'role' => $validated['role'],
+            'status' => 'verified',
+            'password' => Hash::make(Str::random(64)),
+            'email_verified_at' => null,
+        ]);
+
+        $token = Password::broker()->createToken($user);
+
+        $invitationUrl = route('invitation.show', [
+            'token' => $token,
+            'email' => $user->email,
+        ]);
+
+        Mail::to($user->email)->send(new AlumniInvitationMail($user, $invitationUrl));
+
+        return redirect()->route('admin.users.index')
+            ->with('success', "Invitation sent to {$user->email}.");
     }
 
     /**

@@ -14,6 +14,12 @@
             <div class="flex items-start justify-between mb-6">
                 <div>
                     <h1 class="text-2xl font-bold text-gray-900">{{ $jobPost->title }}</h1>
+                    @if($jobPost->company_name)
+                        <p class="text-sm font-semibold text-indigo-600 mt-1 flex items-center gap-1.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                            {{ $jobPost->company_name }}
+                        </p>
+                    @endif
                     <div class="flex items-center gap-2 mt-2">
                         <x-avatar :name="$jobPost->user->name" size="xs" />
                         <p class="text-sm text-gray-500">
@@ -42,6 +48,16 @@
                     <p class="text-sm font-semibold text-gray-900 mt-1">{{ $jobPost->expiry_date->format('F d, Y') }}</p>
                 </div>
             </div>
+
+            {{-- Description --}}
+            @if($jobPost->description)
+                <div class="mb-6">
+                    <p class="text-xs text-gray-500 uppercase tracking-wide font-medium mb-2">Description</p>
+                    <div class="prose prose-sm max-w-none text-gray-700 leading-relaxed">
+                        {!! $jobPost->description !!}
+                    </div>
+                </div>
+            @endif
 
             {{-- Tags --}}
             <div class="mb-6">
