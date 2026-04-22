@@ -6,7 +6,6 @@ use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
 {
@@ -35,16 +34,17 @@ class DatabaseSeeder extends Seeder
         )->create();
 
         // Seed well-known tags
-        $tagNames = ['Laravel', 'PHP', 'JavaScript', 'DataScience', 'MachineLearning', 'DevOps', 'Android', 'iOS', 'React', 'Python'];
-        foreach ($tagNames as $tagName) {
-            Tag::create(['name' => $tagName, 'slug' => Str::slug($tagName)]);
-        }
+        $this->call(TagSeeder::class);
 
         // Subscribe some users to random tags
         $tags = Tag::all();
         $verifiedUsers->each(function (User $user) use ($tags) {
             $user->subscribedTags()->attach($tags->random(rand(1, 4)));
         });
+
+        // Flip roughly half of subscribed users to "Looking for a job" so they receive notifications
+        $verifiedUsers->random((int) ceil($verifiedUsers->count() / 2))
+            ->each(fn (User $user) => $user->update(['is_looking_for_job' => true]));
 
         $this->call([
             JobPostSeeder::class,
